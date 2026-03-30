@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .button-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:active {
+            opacity: 0.7;
+        }
+        .input-group {
+            margin-top: 20px;
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color);
+            border-radius: 10px;
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 10px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">🎮 لوحة التحكم</div>
+        
+        <div class="button-list">
+            <button class="btn" data-action="action1">📱 الإجراء الأول</button>
+            <button class="btn" data-action="action2">⚙️ الإجراء الثاني</button>
+            <button class="btn" data-action="action3">📊 الإجراء الثالث</button>
+            <button class="btn" data-action="action4">🔧 الإجراء الرابع</button>
+            <button class="btn" data-action="action5">💾 الإجراء الخامس</button>
+        </div>
+
+        <div class="input-group">
+            <input type="text" class="input-field" id="multiValue" placeholder="أدخل قيم متعددة (مفصولة بفواصل)">
+            <button class="btn" id="submitBtn">➕ إرسال القيم</button>
+        </div>
+
+        <div class="result" id="result">
+            <div id="resultText"></div>
+        </div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // توسيع التطبيق ليملأ الشاشة
+        tg.MainButton.hide(); // إخفاء الزر الرئيسي
+        
+        // معالجة الضغط على الأزرار
+        document.querySelectorAll('.btn[data-action]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.getAttribute('data-action');
+                const buttonText = btn.innerText;
+                
+                // إرسال البيانات للبوت
+                tg.sendData(JSON.stringify({
+                    action: action,
+                    buttonText: buttonText
+                }));
+                
+                // إظهار رسالة نجاح
+                const resultDiv = document.getElementById('result');
+                const resultText = document.getElementById('resultText');
+                resultText.innerHTML = `✅ تم تنفيذ: ${buttonText}`;
+                resultDiv.classList.add('show');
+                
+                setTimeout(() => {
+                    resultDiv.classList.remove('show');
+                }, 2000);
+            });
+        });
+        
+        // معالجة إدخال القيم المتعددة
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            const input = document.getElementById('multiValue');
+            const values = input.value.split(',').map(v => v.trim()).filter(v => v);
+            
+            if (values.length > 0) {
+                tg.sendData(JSON.stringify({
+                    action: 'multi_values',
+                    values: values
+                }));
+                
+                const resultDiv = document.getElementById('result');
+                const resultText = document.getElementById('resultText');
+                resultText.innerHTML = `✅ تم إرسال ${values.length} قيمة: ${values.join(', ')}`;
+                resultDiv.classList.add('show');
+                input.value = '';
+                
+                setTimeout(() => {
+                    resultDiv.classList.remove('show');
+                }, 3000);
+            }
+        });
+        
+        // استقبال بيانات من البوت
+        tg.onEvent('mainButtonClicked', () => {});
+    </script>
+</body>
+</html>
