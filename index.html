@@ -307,7 +307,7 @@
         
         <div class="gold-balance">
             <div class="balance-label">Current Gold Balance</div>
-            <div class="balance-amount" id="goldBalance">Loading...</div>
+            <div class="balance-amount" id="goldBalance">0</div>
         </div>
         
         <form id="goldSaleForm">
@@ -347,17 +347,27 @@
         tg.MainButton.hide();
         
         let employees = [];
-        let currentGoldBalance = 0;
+        let goldBalance = 0;
         
         // Load from localStorage
         try {
             employees = JSON.parse(localStorage.getItem('employees') || '[]');
+            goldBalance = parseInt(localStorage.getItem('goldBalance') || '0');
         } catch(e) {
             employees = [];
+            goldBalance = 0;
         }
         
         function saveEmployees() {
             localStorage.setItem('employees', JSON.stringify(employees));
+        }
+        
+        function saveGoldBalance() {
+            localStorage.setItem('goldBalance', goldBalance.toString());
+            const balanceEl = document.getElementById('goldBalance');
+            if (balanceEl) {
+                balanceEl.textContent = goldBalance.toLocaleString();
+            }
         }
         
         function updateEmployeesList() {
@@ -406,8 +416,11 @@
             select.innerHTML = options;
         }
         
-        function loadGoldBalance() {
-            tg.sendData(JSON.stringify({ action: 'get_gold_balance' }));
+        function updateGoldBalanceDisplay() {
+            const balanceEl = document.getElementById('goldBalance');
+            if (balanceEl) {
+                balanceEl.textContent = goldBalance.toLocaleString();
+            }
         }
         
         function escapeHtml(text) {
@@ -440,7 +453,7 @@
                 updateCommissionDropdown();
             }
             if (pageId === 'goldSalePage') {
-                loadGoldBalance();
+                updateGoldBalanceDisplay();
             }
         }
         
@@ -478,20 +491,6 @@
             }, 2000);
         }
         
-        // Receive data from bot
-        tg.onEvent('message', function(msg) {
-            try {
-                const data = JSON.parse(msg);
-                if (data.type === 'gold_balance') {
-                    currentGoldBalance = data.balance;
-                    const balanceEl = document.getElementById('goldBalance');
-                    if (balanceEl) {
-                        balanceEl.textContent = currentGoldBalance.toLocaleString();
-                    }
-                }
-            } catch(e) {}
-        });
-        
         // Add bot record
         const addForm = document.getElementById('addForm');
         if (addForm) {
@@ -507,6 +506,12 @@
                 if (!kingdom || !alliance || isNaN(bots) || isNaN(price)) {
                     showToast('addToast', 'Please fill all fields', true);
                     return;
+                }
+                
+                // If payment is gold, update local gold balance
+                if (payment === 'gold') {
+                    goldBalance += price;
+                    saveGoldBalance();
                 }
                 
                 tg.sendData(JSON.stringify({
@@ -604,10 +609,10 @@
                     showToast('goldToast', 'Please enter a valid amount', true);
                     return;
                 }
-                if (amount > currentGoldBalance) {
+                if (amount > goldBalance) {
                     const errorDiv = document.getElementById('amountError');
                     if (errorDiv) {
-                        errorDiv.textContent = `Insufficient balance! Available: ${currentGoldBalance.toLocaleString()}`;
+                        errorDiv.textContent = `Insufficient balance! Available: ${goldBalance.toLocaleString()}`;
                         errorDiv.style.display = 'block';
                     }
                     return;
@@ -616,6 +621,11 @@
                     showToast('goldToast', 'Please enter a valid price', true);
                     return;
                 }
+                
+                // Update local balance
+                goldBalance -= amount;
+                saveGoldBalance();
+                updateGoldBalanceDisplay();
                 
                 tg.sendData(JSON.stringify({
                     action: 'add_gold_sale',
@@ -627,13 +637,13 @@
                 
                 showToast('goldToast', `✅ Sold ${amount.toLocaleString()} gold for $${price}!`);
                 clearForm('goldSaleForm');
-                loadGoldBalance();
             });
         }
         
         // Initial load
         updateEmployeesList();
         updateCommissionDropdown();
+        updateGoldBalanceDisplay();
     </script>
 </body>
 </html>
