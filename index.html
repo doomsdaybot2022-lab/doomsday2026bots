@@ -162,15 +162,6 @@
             resize: vertical;
             min-height: 80px;
         }
-        .refresh-btn {
-            background: var(--tg-theme-secondary-bg-color);
-            border: 1px solid var(--tg-theme-hint-color);
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-bottom: 16px;
-        }
     </style>
 </head>
 <body>
@@ -252,15 +243,12 @@
         <div id="employeeToast"></div>
     </div>
 
-    <!-- Commissions Page -->
+    <!-- Commissions Page - زي ما كان شغال -->
     <div id="commissionPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
             <div class="page-title">Commissions</div>
             <div style="width: 32px;"></div>
-        </div>
-        <div style="margin-bottom: 16px;">
-            <button class="refresh-btn" onclick="loadEmployeesFromExcel()">🔄 Refresh from Excel</button>
         </div>
         <form id="commissionForm">
             <div class="form-group">
@@ -291,7 +279,17 @@
         tg.MainButton.hide();
         
         let employees = [];
-        let isWaitingForEmployees = false;
+        
+        // Load from localStorage
+        try {
+            employees = JSON.parse(localStorage.getItem('employees') || '[]');
+        } catch(e) {
+            employees = [];
+        }
+        
+        function saveEmployees() {
+            localStorage.setItem('employees', JSON.stringify(employees));
+        }
         
         function updateEmployeesList() {
             const container = document.getElementById('employeesList');
@@ -315,13 +313,10 @@
         
         function deleteEmployee(name, index) {
             if (confirm(`Delete employee "${name}"?`)) {
-                // Remove from local array
                 employees.splice(index, 1);
-                localStorage.setItem('employees', JSON.stringify(employees));
+                saveEmployees();
                 updateEmployeesList();
                 updateCommissionDropdown();
-                
-                // Send delete request to bot
                 tg.sendData(JSON.stringify({ action: 'delete_employee', name: name }));
                 showToast('employeeToast', `✅ Employee "${escapeHtml(name)}" deleted!`);
             }
@@ -368,18 +363,13 @@
                     if (input) input.focus();
                 }, 100);
             }
+            if (pageId === 'commissionPage') {
+                updateCommissionDropdown();
+            }
         }
         
         function openCommissionPage() {
             showPage('commissionPage');
-            loadEmployeesFromExcel();
-        }
-        
-        function loadEmployeesFromExcel() {
-            const select = document.getElementById('commissionEmployee');
-            select.innerHTML = '<option value="">Loading...</option>';
-            isWaitingForEmployees = true;
-            tg.sendData(JSON.stringify({ action: 'get_employees' }));
         }
         
         function clearForm(formId) {
@@ -405,20 +395,6 @@
                 }
             }, 2000);
         }
-        
-        // Receive data from bot
-        tg.onEvent('message', function(msg) {
-            try {
-                const data = JSON.parse(msg);
-                if (Array.isArray(data)) {
-                    employees = data;
-                    localStorage.setItem('employees', JSON.stringify(employees));
-                    updateEmployeesList();
-                    updateCommissionDropdown();
-                    isWaitingForEmployees = false;
-                }
-            } catch(e) {}
-        });
         
         // Add bot record
         const addForm = document.getElementById('addForm');
@@ -466,7 +442,7 @@
                 
                 if (!employees.includes(name)) {
                     employees.push(name);
-                    localStorage.setItem('employees', JSON.stringify(employees));
+                    saveEmployees();
                     updateEmployeesList();
                     updateCommissionDropdown();
                     
@@ -517,15 +493,9 @@
             });
         }
         
-        // Load from localStorage
-        try {
-            const stored = localStorage.getItem('employees');
-            if (stored) {
-                employees = JSON.parse(stored);
-                updateEmployeesList();
-                updateCommissionDropdown();
-            }
-        } catch(e) {}
+        // Initial load
+        updateEmployeesList();
+        updateCommissionDropdown();
     </script>
 </body>
 </html>
