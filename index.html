@@ -6,7 +6,11 @@
     <title>Bot Management</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--tg-theme-bg-color);
@@ -15,32 +19,63 @@
             min-height: 100vh;
         }
         .header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 24px; padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--tg-theme-hint-color);
         }
         .back-btn {
-            background: none; border: none; font-size: 28px; cursor: pointer;
-            color: var(--tg-theme-link-color); padding: 8px; margin-left: -8px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--tg-theme-link-color);
+            padding: 8px;
+            margin-left: -8px;
         }
-        .page-title { font-size: 20px; font-weight: 600; }
-        .form-group { margin-bottom: 20px; }
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
         label {
-            display: block; font-size: 14px; font-weight: 500;
-            margin-bottom: 8px; color: var(--tg-theme-hint-color);
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--tg-theme-hint-color);
         }
         input, select, textarea {
-            width: 100%; padding: 12px;
+            width: 100%;
+            padding: 12px;
             border: 1px solid var(--tg-theme-hint-color);
             border-radius: 10px;
             background: var(--tg-theme-secondary-bg-color);
             color: var(--tg-theme-text-color);
             font-size: 16px;
+            outline: none;
+            box-sizing: border-box;
         }
-        .button-group { display: flex; gap: 12px; margin-top: 24px; }
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--tg-theme-button-color);
+        }
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
         .btn {
-            flex: 1; padding: 14px; border: none; border-radius: 10px;
-            font-size: 16px; font-weight: 600; cursor: pointer;
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
         }
         .btn-primary {
             background: var(--tg-theme-button-color);
@@ -48,104 +83,403 @@
         }
         .btn-secondary {
             background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
             border: 1px solid var(--tg-theme-hint-color);
         }
-        .main-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .main-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
         .main-btn {
             background: var(--tg-theme-button-color);
-            padding: 16px; border: none; border-radius: 12px;
-            font-size: 18px; font-weight: 600; cursor: pointer;
+            color: var(--tg-theme-button-text-color);
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
         }
-        .hidden { display: none; }
+        .hidden {
+            display: none;
+        }
+        .toast {
+            background: #00a884;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 16px;
+            animation: fadeOut 2s ease forwards;
+        }
+        .toast.error {
+            background: #e53935;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; display: none; }
+        }
+        .employee-list {
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
         .employee-item {
             background: var(--tg-theme-secondary-bg-color);
-            border-radius: 8px; padding: 10px; margin-bottom: 8px;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+        .empty-list {
+            text-align: center;
+            padding: 20px;
+            color: var(--tg-theme-hint-color);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
         }
     </style>
 </head>
 <body>
 
-<div id="mainPage">
-    <div class="header">
-        <div></div>
-        <div class="page-title">Control Panel</div>
-        <div style="width: 32px;"></div>
-    </div>
-    <div class="main-buttons">
-        <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
-        <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
-        <button class="main-btn" onclick="showPage('commissionPage')">💰 COMMISSIONS</button>
-    </div>
-</div>
-
-<!-- باقي الصفحات القديمة زي ما هي بدون تغيير -->
-
-<!-- صفحة العمولات الجديدة -->
-<div id="commissionPage" class="hidden">
-    <div class="header">
-        <button class="back-btn" onclick="showPage('mainPage')">←</button>
-        <div class="page-title">Commissions</div>
-        <div style="width: 32px;"></div>
+    <!-- Main Page -->
+    <div id="mainPage">
+        <div class="header">
+            <div></div>
+            <div class="page-title">Control Panel</div>
+            <div style="width: 32px;"></div>
+        </div>
+        <div class="main-buttons">
+            <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
+            <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
+            <button class="main-btn" onclick="openCommissionPage()">💰 COMMISSIONS</button>
+        </div>
     </div>
 
-    <form id="commissionForm">
-        <div class="form-group">
-            <label>Select Employee</label>
-            <select id="commissionEmployee"></select>
+    <!-- Add Bot Record Page -->
+    <div id="addPage" class="hidden">
+        <div class="header">
+            <button class="back-btn" onclick="showPage('mainPage')">←</button>
+            <div class="page-title">Add Bot Record</div>
+            <div style="width: 32px;"></div>
         </div>
+        <form id="addForm">
+            <div class="form-group">
+                <label>Kingdom (K)</label>
+                <input type="text" id="kingdom" placeholder="Enter kingdom name" required>
+            </div>
+            <div class="form-group">
+                <label>Alliance Name</label>
+                <input type="text" id="alliance" placeholder="Enter alliance name" required>
+            </div>
+            <div class="form-group">
+                <label>Number of Bots</label>
+                <input type="number" id="bots" placeholder="Number of bots" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>Price</label>
+                <input type="number" id="price" placeholder="Price" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select id="payment">
+                    <option value="paypal">PayPal</option>
+                    <option value="russia">Russia</option>
+                    <option value="usdt">USDT</option>
+                    <option value="gold">Gold</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="clearForm('addForm')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+        <div id="addToast"></div>
+    </div>
 
-        <div class="form-group">
-            <label>Commission Amount</label>
-            <input type="number" id="commissionAmount">
+    <!-- Employees Page -->
+    <div id="employeesPage" class="hidden">
+        <div class="header">
+            <button class="back-btn" onclick="showPage('mainPage')">←</button>
+            <div class="page-title">Employees</div>
+            <div style="width: 32px;"></div>
         </div>
+        <div id="employeesList" class="employee-list"></div>
+        <form id="employeeForm">
+            <div class="form-group">
+                <label>Employee Name</label>
+                <input type="text" id="employeeName" placeholder="Enter employee name" required autofocus>
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="clearForm('employeeForm')">Clear</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+        <div id="employeeToast"></div>
+    </div>
 
-        <div class="button-group">
-            <button type="submit" class="btn btn-primary">Save</button>
+    <!-- Commissions Page -->
+    <div id="commissionPage" class="hidden">
+        <div class="header">
+            <button class="back-btn" onclick="showPage('mainPage')">←</button>
+            <div class="page-title">Commissions</div>
+            <div style="width: 32px;"></div>
         </div>
-    </form>
-</div>
+        <form id="commissionForm">
+            <div class="form-group">
+                <label>Employee</label>
+                <select id="commissionEmployee" required>
+                    <option value="">Loading employees...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Amount</label>
+                <input type="number" id="commissionAmount" placeholder="Enter amount" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Note (Optional)</label>
+                <textarea id="commissionNote" placeholder="Enter notes..."></textarea>
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="clearForm('commissionForm')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
+        <div id="commissionToast"></div>
+    </div>
 
-<script>
-let tg = window.Telegram.WebApp;
-tg.expand();
-
-let employees = JSON.parse(localStorage.getItem('employees') || '[]');
-
-function loadEmployeesDropdown() {
-    const select = document.getElementById('commissionEmployee');
-    if (!select) return;
-
-    select.innerHTML = '';
-    employees.forEach(name => {
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        select.appendChild(option);
-    });
-}
-
-const originalShowPage = showPage;
-showPage = function(pageId) {
-    originalShowPage(pageId);
-
-    if (pageId === 'commissionPage') {
-        loadEmployeesDropdown();
-    }
-};
-
-const commissionForm = document.getElementById('commissionForm');
-if (commissionForm) {
-    commissionForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        tg.sendData(JSON.stringify({
-            action: 'add_commission',
-            employee: document.getElementById('commissionEmployee').value,
-            amount: parseFloat(document.getElementById('commissionAmount').value)
-        }));
-    });
-}
-</script>
-
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.MainButton.hide();
+        
+        // Load employees from localStorage
+        let employees = [];
+        
+        try {
+            employees = JSON.parse(localStorage.getItem('employees') || '[]');
+        } catch(e) {
+            employees = [];
+        }
+        
+        function saveEmployees() {
+            localStorage.setItem('employees', JSON.stringify(employees));
+        }
+        
+        function updateEmployeesList() {
+            const container = document.getElementById('employeesList');
+            if (!container) return;
+            
+            if (employees.length === 0) {
+                container.innerHTML = '<div class="empty-list">📭 No employees yet</div>';
+                return;
+            }
+            let html = '';
+            employees.forEach(name => {
+                html += `<div class="employee-item">👤 ${escapeHtml(name)}</div>`;
+            });
+            container.innerHTML = html;
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        function showPage(pageId) {
+            const pages = ['mainPage', 'addPage', 'employeesPage', 'commissionPage'];
+            pages.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(pageId);
+            if (target) target.classList.remove('hidden');
+            
+            if (pageId === 'employeesPage') {
+                updateEmployeesList();
+                setTimeout(() => {
+                    const input = document.getElementById('employeeName');
+                    if (input) input.focus();
+                }, 100);
+            }
+        }
+        
+        function openCommissionPage() {
+            showPage('commissionPage');
+            loadEmployeesFromBot();
+        }
+        
+        function loadEmployeesFromBot() {
+            const select = document.getElementById('commissionEmployee');
+            select.innerHTML = '<option value="">Loading employees...</option>';
+            tg.sendData(JSON.stringify({ action: 'get_employees' }));
+        }
+        
+        function updateCommissionDropdown(employeesList) {
+            const select = document.getElementById('commissionEmployee');
+            if (!select) return;
+            
+            if (!employeesList || employeesList.length === 0) {
+                select.innerHTML = '<option value="">No employees available</option>';
+                return;
+            }
+            let options = '<option value="">Select employee...</option>';
+            employeesList.forEach(name => {
+                options += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+            });
+            select.innerHTML = options;
+        }
+        
+        function clearForm(formId) {
+            const form = document.getElementById(formId);
+            if (form) form.reset();
+        }
+        
+        function showToast(containerId, message, isError = false) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.className = 'toast';
+            if (isError) toast.classList.add('error');
+            
+            container.innerHTML = '';
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                if (container.firstChild === toast) {
+                    container.innerHTML = '';
+                }
+            }, 2000);
+        }
+        
+        // Receive data from bot
+        tg.onEvent('message', function(msg) {
+            try {
+                const data = JSON.parse(msg);
+                if (Array.isArray(data)) {
+                    updateCommissionDropdown(data);
+                    // Also update localStorage to keep in sync
+                    employees = data;
+                    saveEmployees();
+                    updateEmployeesList();
+                }
+            } catch(e) {
+                // Not JSON, ignore
+            }
+        });
+        
+        // Add bot record
+        const addForm = document.getElementById('addForm');
+        if (addForm) {
+            addForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const kingdom = document.getElementById('kingdom')?.value || '';
+                const alliance = document.getElementById('alliance')?.value || '';
+                const bots = parseInt(document.getElementById('bots')?.value || '0');
+                const price = parseFloat(document.getElementById('price')?.value || '0');
+                const payment = document.getElementById('payment')?.value || '';
+                
+                if (!kingdom || !alliance || isNaN(bots) || isNaN(price)) {
+                    showToast('addToast', 'Please fill all fields', true);
+                    return;
+                }
+                
+                tg.sendData(JSON.stringify({
+                    action: 'add_bot_record',
+                    kingdom: kingdom,
+                    alliance: alliance,
+                    bots: bots,
+                    price: price,
+                    payment: payment
+                }));
+                
+                clearForm('addForm');
+                tg.close();
+            });
+        }
+        
+        // Add employee
+        const employeeForm = document.getElementById('employeeForm');
+        if (employeeForm) {
+            employeeForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('employeeName')?.value.trim();
+                
+                if (!name) {
+                    showToast('employeeToast', 'Please enter employee name', true);
+                    return;
+                }
+                
+                if (!employees.includes(name)) {
+                    employees.push(name);
+                    saveEmployees();
+                    updateEmployeesList();
+                    
+                    tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
+                    showToast('employeeToast', `✅ Employee "${escapeHtml(name)}" added!`);
+                    clearForm('employeeForm');
+                    
+                    const input = document.getElementById('employeeName');
+                    if (input) input.focus();
+                } else {
+                    showToast('employeeToast', `❌ Employee "${escapeHtml(name)}" already exists!`, true);
+                }
+            });
+        }
+        
+        // Add commission
+        const commissionForm = document.getElementById('commissionForm');
+        if (commissionForm) {
+            commissionForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const employee = document.getElementById('commissionEmployee')?.value;
+                const amount = parseFloat(document.getElementById('commissionAmount')?.value || '0');
+                const note = document.getElementById('commissionNote')?.value || '';
+                
+                if (!employee) {
+                    showToast('commissionToast', 'Please select an employee', true);
+                    return;
+                }
+                if (!amount || amount <= 0) {
+                    showToast('commissionToast', 'Please enter a valid amount', true);
+                    return;
+                }
+                
+                tg.sendData(JSON.stringify({
+                    action: 'add_commission',
+                    employee: employee,
+                    amount: amount,
+                    note: note
+                }));
+                
+                showToast('commissionToast', `✅ Commission for ${escapeHtml(employee)} added!`);
+                clearForm('commissionForm');
+                
+                // Reset dropdown to default
+                const select = document.getElementById('commissionEmployee');
+                if (select) select.value = '';
+                document.getElementById('commissionAmount')?.focus();
+            });
+        }
+        
+        // Initial load
+        updateEmployeesList();
+    </script>
 </body>
 </html>
