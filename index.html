@@ -180,6 +180,7 @@
             <button class="main-btn" onclick="openCommissionPage()">💰 COMMISSIONS</button>
             <button class="main-btn" onclick="openGoldSalePage()">🪙 GOLD SALE</button>
             <button class="main-btn" onclick="openTransferPage()">🔄 TRANSFER</button>
+            <button class="main-btn" onclick="openWithdrawPage()">💸 WITHDRAW</button>
         </div>
     </div>
 
@@ -283,6 +284,29 @@
         <div id="transferToast"></div>
     </div>
 
+    <div id="withdrawPage" class="hidden">
+        <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Withdraw</div><div style="width:32px"></div></div>
+        <form id="withdrawForm">
+            <div class="form-group">
+                <label>Amount (USD)</label>
+                <input type="number" id="withdrawAmount" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Person Name</label>
+                <input type="text" id="withdrawPerson" placeholder="Enter person name" required>
+            </div>
+            <div class="form-group">
+                <label>Note (Optional)</label>
+                <textarea id="withdrawNote" placeholder="Additional notes..."></textarea>
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="clearForm('withdrawForm')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Withdraw</button>
+            </div>
+        </form>
+        <div id="withdrawToast"></div>
+    </div>
+
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
@@ -328,7 +352,7 @@
         }
         
         function showPage(id) {
-            ['mainPage','addPage','employeesPage','commissionPage','goldSalePage','transferPage'].forEach(p => document.getElementById(p).classList.add('hidden'));
+            ['mainPage','addPage','employeesPage','commissionPage','goldSalePage','transferPage','withdrawPage'].forEach(p => document.getElementById(p).classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             if (id === 'employeesPage') { updateEmployeesList(); setTimeout(() => document.getElementById('employeeName')?.focus(), 100); }
             if (id === 'commissionPage') updateCommissionDropdown();
@@ -337,6 +361,7 @@
         function openCommissionPage() { showPage('commissionPage'); }
         function openGoldSalePage() { showPage('goldSalePage'); }
         function openTransferPage() { showPage('transferPage'); }
+        function openWithdrawPage() { showPage('withdrawPage'); }
         function clearForm(id) { document.getElementById(id).reset(); }
         function escapeHtml(t) { if(!t)return ''; return t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
         
@@ -457,6 +482,35 @@
             
             showToast('transferToast', `✅ Transfer from ${fromCurrency} to ${toCurrency} recorded`);
             clearForm('transferForm');
+            tg.close();
+        });
+        
+        // Withdraw
+        document.getElementById('withdrawForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const person = document.getElementById('withdrawPerson').value.trim();
+            const note = document.getElementById('withdrawNote').value;
+            
+            if (!amount || amount <= 0) {
+                showToast('withdrawToast', 'Please enter a valid amount', true);
+                return;
+            }
+            if (!person) {
+                showToast('withdrawToast', 'Please enter person name', true);
+                return;
+            }
+            
+            tg.sendData(JSON.stringify({
+                action: 'add_withdraw',
+                amount: amount,
+                person: person,
+                note: note
+            }));
+            
+            showToast('withdrawToast', `✅ Withdrawal of $${amount} recorded for ${escapeHtml(person)}`);
+            clearForm('withdrawForm');
             tg.close();
         });
         
