@@ -117,6 +117,11 @@
             70% { opacity: 1; }
             100% { opacity: 0; display: none; }
         }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--tg-theme-hint-color);
+        }
     </style>
 </head>
 <body>
@@ -130,7 +135,7 @@
         <div class="main-buttons">
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
             <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
-            <button class="main-btn" onclick="showPage('commissionPage')">💰 COMMISSIONS</button>
+            <button class="main-btn" onclick="openCommissionPage()">💰 COMMISSIONS</button>
         </div>
     </div>
 
@@ -204,7 +209,7 @@
             <div class="form-group">
                 <label>Employee</label>
                 <select id="commissionEmployee" required>
-                    <option value="">Select employee...</option>
+                    <option value="">Loading employees...</option>
                 </select>
             </div>
             <div class="form-group">
@@ -242,10 +247,13 @@
                     document.getElementById('employeeName').focus();
                 }, 100);
             }
-            
-            if (pageId === 'commissionPage') {
-                loadEmployees();
-            }
+        }
+
+        function openCommissionPage() {
+            // أولاً نفتح الصفحة
+            showPage('commissionPage');
+            // بعدين نجيب البيانات
+            loadEmployees();
         }
 
         function clearForm(formId) {
@@ -296,7 +304,7 @@
             } catch(e) {}
         });
 
-        // إضافة بوت - يقفل الصفحة
+        // إضافة بوت
         document.getElementById('addForm').addEventListener('submit', function(e) {
             e.preventDefault();
             tg.sendData(JSON.stringify({
@@ -311,7 +319,7 @@
             tg.close();
         });
 
-        // إضافة موظف - يبقى مفتوح
+        // إضافة موظف
         document.getElementById('employeeForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('employeeName').value.trim();
@@ -323,7 +331,7 @@
             }
         });
 
-        // إضافة عمولة - يبقى مفتوح (مش بيقفل)
+        // إضافة عمولة
         document.getElementById('commissionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const employee = document.getElementById('commissionEmployee').value;
@@ -339,7 +347,10 @@
                 }));
                 showToast('commissionToast', `✅ Commission for ${employee} added!`);
                 clearForm('commissionForm');
-                // ملاحظة: مش بنعمل tg.close() عشان الصفحة تفضل مفتوحة
+                // نرجع نختار الموظف الأول بعد المسح عشان يبقى سهل
+                if (employeesList.length > 0) {
+                    document.getElementById('commissionEmployee').value = employeesList[0];
+                }
             } else {
                 showToast('commissionToast', 'Please select employee and enter amount');
             }
