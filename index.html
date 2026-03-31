@@ -188,9 +188,6 @@
             padding: 4px 8px;
             border-radius: 8px;
         }
-        .refresh-balance-btn:hover {
-            background: var(--tg-theme-secondary-bg-color);
-        }
         .error-msg {
             color: #e53935;
             font-size: 14px;
@@ -504,8 +501,9 @@
             }, 2000);
         }
         
-        // Receive data from bot
+        // Receive data from bot - this catches all messages
         tg.onEvent('message', function(msg) {
+            console.log("Received:", msg);
             try {
                 const data = JSON.parse(msg);
                 if (data.type === 'gold_balance') {
@@ -519,6 +517,7 @@
                 }
             } catch(e) {
                 // Not JSON, ignore
+                console.log("Not JSON:", msg);
             }
         });
         
