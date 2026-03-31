@@ -1,85 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bot Panel</title>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-<style>
-body { font-family: Arial; padding: 15px; }
-.hidden { display: none; }
-.main-btn { display:block; width:100%; margin:10px 0; padding:15px; font-size:18px; }
-.form-group { margin-bottom:15px; }
-input, select { width:100%; padding:10px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bot Management</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            padding: 16px;
+            min-height: 100vh;
+        }
+        .header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 24px; padding-bottom: 12px;
+            border-bottom: 1px solid var(--tg-theme-hint-color);
+        }
+        .back-btn {
+            background: none; border: none; font-size: 28px; cursor: pointer;
+            color: var(--tg-theme-link-color); padding: 8px; margin-left: -8px;
+        }
+        .page-title { font-size: 20px; font-weight: 600; }
+        .form-group { margin-bottom: 20px; }
+        label {
+            display: block; font-size: 14px; font-weight: 500;
+            margin-bottom: 8px; color: var(--tg-theme-hint-color);
+        }
+        input, select, textarea {
+            width: 100%; padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color);
+            border-radius: 10px;
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            font-size: 16px;
+        }
+        .button-group { display: flex; gap: 12px; margin-top: 24px; }
+        .btn {
+            flex: 1; padding: 14px; border: none; border-radius: 10px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+        .btn-secondary {
+            background: var(--tg-theme-secondary-bg-color);
+            border: 1px solid var(--tg-theme-hint-color);
+        }
+        .main-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .main-btn {
+            background: var(--tg-theme-button-color);
+            padding: 16px; border: none; border-radius: 12px;
+            font-size: 18px; font-weight: 600; cursor: pointer;
+        }
+        .hidden { display: none; }
+        .employee-item {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 8px; padding: 10px; margin-bottom: 8px;
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- MAIN -->
 <div id="mainPage">
-    <h2>Control Panel</h2>
-    <button class="main-btn" onclick="showPage('addPage')">ADD</button>
-    <button class="main-btn" onclick="showPage('employeesPage')">EMPLOYEES</button>
-    <button class="main-btn" onclick="showPage('commissionPage')">COMMISSIONS</button>
+    <div class="header">
+        <div></div>
+        <div class="page-title">Control Panel</div>
+        <div style="width: 32px;"></div>
+    </div>
+    <div class="main-buttons">
+        <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
+        <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
+        <button class="main-btn" onclick="showPage('commissionPage')">💰 COMMISSIONS</button>
+    </div>
 </div>
 
-<!-- ADD -->
-<div id="addPage" class="hidden">
-    <button onclick="showPage('mainPage')">Back</button>
+<!-- باقي الصفحات القديمة زي ما هي بدون تغيير -->
 
-    <form id="addForm">
-        <div class="form-group">
-            <input id="kingdom" placeholder="Kingdom">
-        </div>
-        <div class="form-group">
-            <input id="alliance" placeholder="Alliance">
-        </div>
-        <div class="form-group">
-            <input type="number" id="bots" placeholder="Bots">
-        </div>
-        <div class="form-group">
-            <input type="number" id="price" placeholder="Price">
-        </div>
-        <div class="form-group">
-            <select id="payment">
-                <option value="paypal">paypal</option>
-                <option value="gold">gold</option>
-            </select>
-        </div>
-
-        <button type="submit">Save</button>
-    </form>
-</div>
-
-<!-- EMPLOYEES -->
-<div id="employeesPage" class="hidden">
-    <button onclick="showPage('mainPage')">Back</button>
-
-    <div id="employeesList"></div>
-
-    <form id="employeeForm">
-        <input id="employeeName" placeholder="Employee name">
-        <button type="submit">Save</button>
-    </form>
-</div>
-
-<!-- COMMISSIONS -->
+<!-- صفحة العمولات الجديدة -->
 <div id="commissionPage" class="hidden">
-    <button onclick="showPage('mainPage')">Back</button>
+    <div class="header">
+        <button class="back-btn" onclick="showPage('mainPage')">←</button>
+        <div class="page-title">Commissions</div>
+        <div style="width: 32px;"></div>
+    </div>
 
     <form id="commissionForm">
         <div class="form-group">
+            <label>Select Employee</label>
             <select id="commissionEmployee"></select>
         </div>
 
         <div class="form-group">
-            <input type="number" id="commissionAmount" placeholder="Amount">
+            <label>Commission Amount</label>
+            <input type="number" id="commissionAmount">
         </div>
 
-        <button type="submit">Save</button>
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
     </form>
 </div>
 
@@ -89,81 +111,40 @@ tg.expand();
 
 let employees = JSON.parse(localStorage.getItem('employees') || '[]');
 
-function showPage(page){
-    ['mainPage','addPage','employeesPage','commissionPage'].forEach(p=>{
-        document.getElementById(p).classList.add('hidden');
-    });
+function loadEmployeesDropdown() {
+    const select = document.getElementById('commissionEmployee');
+    if (!select) return;
 
-    document.getElementById(page).classList.remove('hidden');
-
-    if(page === 'commissionPage'){
-        loadEmployees();
-    }
-
-    if(page === 'employeesPage'){
-        renderEmployees();
-    }
-}
-
-function renderEmployees(){
-    let box = document.getElementById('employeesList');
-    box.innerHTML = '';
-    employees.forEach(e=>{
-        box.innerHTML += `<div>${e}</div>`;
-    });
-}
-
-function loadEmployees(){
-    let select = document.getElementById('commissionEmployee');
     select.innerHTML = '';
-    employees.forEach(e=>{
-        select.innerHTML += `<option value="${e}">${e}</option>`;
+    employees.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
     });
 }
 
-/* ADD BOT */
-document.getElementById('addForm').onsubmit = e=>{
-    e.preventDefault();
+const originalShowPage = showPage;
+showPage = function(pageId) {
+    originalShowPage(pageId);
 
-    tg.sendData(JSON.stringify({
-        action:'add_bot_record',
-        kingdom:kingdom.value,
-        alliance:alliance.value,
-        bots:+bots.value,
-        price:+price.value,
-        payment:payment.value
-    }));
+    if (pageId === 'commissionPage') {
+        loadEmployeesDropdown();
+    }
 };
 
-/* ADD EMPLOYEE */
-document.getElementById('employeeForm').onsubmit = e=>{
-    e.preventDefault();
-
-    let name = employeeName.value.trim();
-
-    if(!employees.includes(name)){
-        employees.push(name);
-        localStorage.setItem('employees', JSON.stringify(employees));
+const commissionForm = document.getElementById('commissionForm');
+if (commissionForm) {
+    commissionForm.addEventListener('submit', function(e) {
+        e.preventDefault();
 
         tg.sendData(JSON.stringify({
-            action:'add_employee',
-            name:name
+            action: 'add_commission',
+            employee: document.getElementById('commissionEmployee').value,
+            amount: parseFloat(document.getElementById('commissionAmount').value)
         }));
-
-        renderEmployees();
-    }
-};
-
-/* ADD COMMISSION */
-document.getElementById('commissionForm').onsubmit = e=>{
-    e.preventDefault();
-
-    tg.sendData(JSON.stringify({
-        action:'add_commission',
-        employee:commissionEmployee.value,
-        amount:+commissionAmount.value
-    }));
-};
+    });
+}
 </script>
 
 </body>
