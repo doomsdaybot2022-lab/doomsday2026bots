@@ -130,7 +130,7 @@
         <div class="main-buttons">
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
             <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
-            <button class="main-btn" onclick="openCommissionPage()">💰 COMMISSIONS</button>
+            <button class="main-btn" onclick="showPage('commissionPage'); loadEmployeesForCommission()">💰 COMMISSIONS</button>
         </div>
     </div>
 
@@ -246,36 +246,8 @@
             }
         }
         
-        function openCommissionPage() {
-            // فتح الصفحة أولاً
-            showPage('commissionPage');
-            // ثم طلب البيانات من البوت
-            loadEmployeesForCommission();
-        }
-        
         function loadEmployeesList() {
-            const container = document.getElementById('employeesList');
             tg.sendData(JSON.stringify({ action: 'get_employees' }));
-            
-            // استقبال البيانات (يتم في حدث message)
-            const originalHandler = tg.onEvent('message', function(msg) {
-                try {
-                    const data = JSON.parse(msg);
-                    if (Array.isArray(data)) {
-                        if (container) {
-                            if (data.length === 0) {
-                                container.innerHTML = '<div style="text-align:center; padding:20px; color: var(--tg-theme-hint-color);">No employees yet</div>';
-                            } else {
-                                let html = '';
-                                data.forEach(name => {
-                                    html += `<div style="background: var(--tg-theme-secondary-bg-color); border-radius:8px; padding:10px; margin-bottom:8px;">👤 ${name}</div>`;
-                                });
-                                container.innerHTML = html;
-                            }
-                        }
-                    }
-                } catch(e) {}
-            });
         }
         
         function loadEmployeesForCommission() {
@@ -316,32 +288,41 @@
             }, 2000);
         }
         
-        // استقبال البيانات من البوت
+        // استقبال البيانات من البوت عبر الرسائل
         tg.onEvent('message', function(msg) {
-            try {
-                const data = JSON.parse(msg);
-                if (Array.isArray(data)) {
-                    employeesList = data;
-                    // تحديث القائمة في صفحة العمولات إذا كانت مفتوحة
-                    const commissionPage = document.getElementById('commissionPage');
-                    if (commissionPage && !commissionPage.classList.contains('hidden')) {
-                        updateCommissionDropdown(employeesList);
-                    }
-                    // تحديث قائمة الموظفين في صفحة الموظفين
-                    const employeesListContainer = document.getElementById('employeesList');
-                    if (employeesListContainer) {
-                        if (data.length === 0) {
-                            employeesListContainer.innerHTML = '<div style="text-align:center; padding:20px; color: var(--tg-theme-hint-color);">No employees yet</div>';
-                        } else {
-                            let html = '';
-                            data.forEach(name => {
-                                html += `<div style="background: var(--tg-theme-secondary-bg-color); border-radius:8px; padding:10px; margin-bottom:8px;">👤 ${name}</div>`;
-                            });
-                            employeesListContainer.innerHTML = html;
+            // نتجاهل الرسائل العادية
+            if (typeof msg !== 'string') return;
+            
+            // نبحث عن البيانات
+            if (msg.startsWith('EMPLOYEES_DATA:')) {
+                try {
+                    const jsonStr = msg.replace('EMPLOYEES_DATA:', '');
+                    const data = JSON.parse(jsonStr);
+                    if (Array.isArray(data)) {
+                        employeesList = data;
+                        // تحديث القائمة في صفحة العمولات
+                        const commissionPage = document.getElementById('commissionPage');
+                        if (commissionPage && !commissionPage.classList.contains('hidden')) {
+                            updateCommissionDropdown(employeesList);
+                        }
+                        // تحديث قائمة الموظفين في صفحة الموظفين
+                        const employeesListContainer = document.getElementById('employeesList');
+                        if (employeesListContainer) {
+                            if (data.length === 0) {
+                                employeesListContainer.innerHTML = '<div style="text-align:center; padding:20px; color: var(--tg-theme-hint-color);">No employees yet</div>';
+                            } else {
+                                let html = '';
+                                data.forEach(name => {
+                                    html += `<div style="background: var(--tg-theme-secondary-bg-color); border-radius:8px; padding:10px; margin-bottom:8px;">👤 ${name}</div>`;
+                                });
+                                employeesListContainer.innerHTML = html;
+                            }
                         }
                     }
+                } catch(e) {
+                    console.log('Parse error:', e);
                 }
-            } catch(e) {}
+            }
         });
         
         // إضافة بوت
