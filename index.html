@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bot Management</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
@@ -11,7 +11,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--tg-theme-bg-color);
@@ -19,7 +18,6 @@
             padding: 16px;
             min-height: 100vh;
         }
-
         .header {
             display: flex;
             align-items: center;
@@ -28,7 +26,6 @@
             padding-bottom: 12px;
             border-bottom: 1px solid var(--tg-theme-hint-color);
         }
-
         .back-btn {
             background: none;
             border: none;
@@ -38,16 +35,13 @@
             padding: 8px;
             margin-left: -8px;
         }
-
         .page-title {
             font-size: 20px;
             font-weight: 600;
         }
-
         .form-group {
             margin-bottom: 20px;
         }
-
         label {
             display: block;
             font-size: 14px;
@@ -55,7 +49,6 @@
             margin-bottom: 8px;
             color: var(--tg-theme-hint-color);
         }
-
         input, select, textarea {
             width: 100%;
             padding: 12px;
@@ -65,20 +58,13 @@
             color: var(--tg-theme-text-color);
             font-size: 16px;
             outline: none;
-            transition: border-color 0.2s;
             box-sizing: border-box;
         }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--tg-theme-button-color);
-        }
-
         .button-group {
             display: flex;
             gap: 12px;
             margin-top: 24px;
         }
-
         .btn {
             flex: 1;
             padding: 14px;
@@ -87,27 +73,22 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
-
         .btn-primary {
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
         }
-
         .btn-secondary {
             background: var(--tg-theme-secondary-bg-color);
             color: var(--tg-theme-text-color);
             border: 1px solid var(--tg-theme-hint-color);
         }
-
         .main-buttons {
             display: flex;
             flex-direction: column;
             gap: 12px;
             margin-top: 20px;
         }
-
         .main-btn {
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
@@ -119,18 +100,15 @@
             cursor: pointer;
             text-align: center;
         }
-
         .hidden {
             display: none;
         }
-
         .employee-item {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: 8px;
             padding: 10px;
             margin-bottom: 8px;
         }
-
         .info-text {
             text-align: center;
             padding: 40px;
@@ -140,7 +118,6 @@
 </head>
 <body>
 
-    <!-- الصفحة الرئيسية -->
     <div id="mainPage">
         <div class="header">
             <div></div>
@@ -149,12 +126,11 @@
         </div>
         <div class="main-buttons">
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
-            <button class="main-btn" onclick="showPage('employeesPage'); loadEmployees()">👥 EMPLOYEES</button>
-            <button class="main-btn" onclick="showPage('commissionPage'); loadCommissionEmployees()">💰 COMMISSIONS</button>
+            <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
+            <button class="main-btn" onclick="showPage('commissionPage'); loadEmployeesForCommission()">💰 COMMISSIONS</button>
         </div>
     </div>
 
-    <!-- صفحة إضافة بوت -->
     <div id="addPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
@@ -164,19 +140,19 @@
         <form id="addForm">
             <div class="form-group">
                 <label>Kingdom (K)</label>
-                <input type="text" id="kingdom" placeholder="Enter kingdom name" required>
+                <input type="text" id="kingdom" required>
             </div>
             <div class="form-group">
                 <label>Alliance Name</label>
-                <input type="text" id="alliance" placeholder="Enter alliance name" required>
+                <input type="text" id="alliance" required>
             </div>
             <div class="form-group">
                 <label>Number of Bots</label>
-                <input type="number" id="bots" placeholder="Number of bots" min="0" required>
+                <input type="number" id="bots" min="0" required>
             </div>
             <div class="form-group">
                 <label>Price</label>
-                <input type="number" id="price" placeholder="Price" min="0" step="0.01" required>
+                <input type="number" id="price" min="0" step="0.01" required>
             </div>
             <div class="form-group">
                 <label>Payment Method</label>
@@ -195,18 +171,17 @@
         </form>
     </div>
 
-    <!-- صفحة الموظفين -->
     <div id="employeesPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
             <div class="page-title">Employees</div>
             <div style="width: 32px;"></div>
         </div>
-        <div id="employeesList" style="margin-bottom: 20px;"></div>
+        <div id="employeesList"></div>
         <form id="employeeForm">
             <div class="form-group">
-                <label>New Employee Name</label>
-                <input type="text" id="employeeName" placeholder="Enter name" required>
+                <label>Employee Name</label>
+                <input type="text" id="employeeName" required>
             </div>
             <div class="button-group">
                 <button type="button" class="btn btn-secondary" onclick="clearForm('employeeForm')">Clear</button>
@@ -215,7 +190,6 @@
         </form>
     </div>
 
-    <!-- صفحة العمولات -->
     <div id="commissionPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
@@ -226,16 +200,16 @@
             <div class="form-group">
                 <label>Employee</label>
                 <select id="commissionEmployee" required>
-                    <option value="">Loading employees...</option>
+                    <option value="">Select employee...</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>Amount</label>
-                <input type="number" id="commissionAmount" placeholder="Commission amount" min="0" step="0.01" required>
+                <input type="number" id="commissionAmount" min="0" step="0.01" required>
             </div>
             <div class="form-group">
                 <label>Note (Optional)</label>
-                <textarea id="commissionNote" placeholder="Notes..."></textarea>
+                <textarea id="commissionNote"></textarea>
             </div>
             <div class="button-group">
                 <button type="button" class="btn btn-secondary" onclick="clearForm('commissionForm')">Cancel</button>
@@ -248,54 +222,71 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
         tg.MainButton.hide();
-
+        
+        let employeesList = [];
+        
         function showPage(pageId) {
-            document.querySelectorAll('#mainPage, #addPage, #employeesPage, #commissionPage').forEach(p => p.classList.add('hidden'));
+            document.getElementById('mainPage').classList.add('hidden');
+            document.getElementById('addPage').classList.add('hidden');
+            document.getElementById('employeesPage').classList.add('hidden');
+            document.getElementById('commissionPage').classList.add('hidden');
             document.getElementById(pageId).classList.remove('hidden');
+            
+            if (pageId === 'employeesPage') {
+                loadEmployees();
+            }
         }
-
+        
         function clearForm(formId) {
             document.getElementById(formId).reset();
         }
-
-        // تحميل الموظفين لعرضهم في القائمة
+        
         function loadEmployees() {
             tg.sendData(JSON.stringify({ action: 'get_employees' }));
         }
-
-        // تحميل الموظفين للقائمة المنسدلة في العمولات
-        function loadCommissionEmployees() {
-            tg.sendData(JSON.stringify({ action: 'get_employees_for_commission' }));
+        
+        function loadEmployeesForCommission() {
+            tg.sendData(JSON.stringify({ action: 'get_employees' }));
         }
-
-        // استقبال البيانات من البوت
-        window.handleDataFromBot = function(data) {
-            if (data.type === 'employees_list') {
-                const container = document.getElementById('employeesList');
-                if (!data.content || data.content.length === 0) {
-                    container.innerHTML = '<div class="info-text">No employees yet</div>';
-                    return;
-                }
-                let html = '';
-                data.content.forEach(emp => {
-                    html += `<div class="employee-item">👤 ${emp.name}</div>`;
-                });
-                container.innerHTML = html;
-            } 
-            else if (data.type === 'employees_dropdown') {
-                const select = document.getElementById('commissionEmployee');
-                if (!data.content || data.content.length === 0) {
-                    select.innerHTML = '<option value="">No employees available</option>';
-                    return;
-                }
-                let options = '<option value="">Select employee...</option>';
-                data.content.forEach(emp => {
-                    options += `<option value="${emp.name}">${emp.name}</option>`;
-                });
-                select.innerHTML = options;
+        
+        function updateEmployeesList() {
+            const container = document.getElementById('employeesList');
+            if (employeesList.length === 0) {
+                container.innerHTML = '<div class="info-text">No employees yet</div>';
+                return;
             }
-        };
-
+            let html = '';
+            employeesList.forEach(name => {
+                html += `<div class="employee-item">👤 ${name}</div>`;
+            });
+            container.innerHTML = html;
+        }
+        
+        function updateCommissionDropdown() {
+            const select = document.getElementById('commissionEmployee');
+            if (employeesList.length === 0) {
+                select.innerHTML = '<option value="">No employees available</option>';
+                return;
+            }
+            let options = '<option value="">Select employee...</option>';
+            employeesList.forEach(name => {
+                options += `<option value="${name}">${name}</option>`;
+            });
+            select.innerHTML = options;
+        }
+        
+        // استقبال البيانات من البوت
+        tg.onEvent('message', function(msg) {
+            try {
+                const data = JSON.parse(msg);
+                if (Array.isArray(data)) {
+                    employeesList = data;
+                    updateEmployeesList();
+                    updateCommissionDropdown();
+                }
+            } catch(e) {}
+        });
+        
         // إضافة بوت
         document.getElementById('addForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -308,9 +299,9 @@
                 payment: document.getElementById('payment').value
             }));
             clearForm('addForm');
-            tg.close(); // إغلاق الويب آب بعد الحفظ
+            tg.close();
         });
-
+        
         // إضافة موظف
         document.getElementById('employeeForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -318,11 +309,10 @@
             if (name) {
                 tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
                 clearForm('employeeForm');
-                // إعادة تحميل القائمة بعد الإضافة
                 setTimeout(() => loadEmployees(), 500);
             }
         });
-
+        
         // إضافة عمولة
         document.getElementById('commissionForm').addEventListener('submit', function(e) {
             e.preventDefault();
