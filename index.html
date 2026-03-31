@@ -130,7 +130,7 @@
         <div class="main-buttons">
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
             <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
-            <button class="main-btn" onclick="showPage('commissionPage')">💰 COMMISSIONS</button>
+            <button class="main-btn" onclick="openCommissionPage()">💰 COMMISSIONS</button>
         </div>
     </div>
 
@@ -205,7 +205,7 @@
             <div class="form-group">
                 <label>Employee</label>
                 <select id="commissionEmployee" required>
-                    <option value="">No employees yet</option>
+                    <option value="">Loading employees...</option>
                 </select>
             </div>
             <div class="form-group">
@@ -229,39 +229,8 @@
         tg.expand();
         tg.MainButton.hide();
         
-        // تحميل الموظفين من localStorage
-        let employees = JSON.parse(localStorage.getItem('employees') || '[]');
-        
-        function saveEmployees() {
-            localStorage.setItem('employees', JSON.stringify(employees));
-        }
-        
-        function updateEmployeesList() {
-            const container = document.getElementById('employeesList');
-            if (employees.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:20px; color: var(--tg-theme-hint-color);">No employees yet</div>';
-                return;
-            }
-            let html = '';
-            employees.forEach(name => {
-                html += `<div style="background: var(--tg-theme-secondary-bg-color); border-radius:8px; padding:10px; margin-bottom:8px;">👤 ${name}</div>`;
-            });
-            container.innerHTML = html;
-        }
-        
-        function updateCommissionDropdown() {
-            const select = document.getElementById('commissionEmployee');
-            if (employees.length === 0) {
-                select.innerHTML = '<option value="">No employees available</option>';
-                return;
-            }
-            let options = '<option value="">Select employee...</option>';
-            employees.forEach(name => {
-                options += `<option value="${name}">${name}</option>`;
-            });
-            select.innerHTML = options;
-        }
-        
+        let employeesList = [];
+
         function showPage(pageId) {
             document.getElementById('mainPage').classList.add('hidden');
             document.getElementById('addPage').classList.add('hidden');
@@ -270,15 +239,62 @@
             document.getElementById(pageId).classList.remove('hidden');
             
             if (pageId === 'employeesPage') {
-                updateEmployeesList();
+                loadEmployeesList();
                 setTimeout(() => {
                     document.getElementById('employeeName').focus();
                 }, 100);
             }
+        }
+        
+        function openCommissionPage() {
+            // فتح الصفحة أولاً
+            showPage('commissionPage');
+            // ثم طلب البيانات من البوت
+            loadEmployeesForCommission();
+        }
+        
+        function loadEmployeesList() {
+            const container = document.getElementById('employeesList');
+            tg.sendData(JSON.stringify({ action: 'get_employees' }));
             
-            if (pageId === 'commissionPage') {
-                updateCommissionDropdown();
+            // استقبال البيانات (يتم في حدث message)
+            const originalHandler = tg.onEvent('message', function(msg) {
+                try {
+                    const data = JSON.parse(msg);
+                    if (Array.isArray(data)) {
+                        if (container) {
+                            if (data.length === 0) {
+                                container.innerHTML = '<div style="text-align:center; padding:20px; color: var(--tg-theme-hint-color);">No employees yet</div>';
+                            } else {
+                                let html = '';
+                                data.forEach(name => {
+                                    html += `<div style="background: var(--tg-theme-secondary-bg-color); border-radius:8px; padding:10px; margin-bottom:8px;">👤 ${name}</div>`;
+                                });
+                                container.innerHTML = html;
+                            }
+                        }
+                    }
+                } catch(e) {}
+            });
+        }
+        
+        function loadEmployeesForCommission() {
+            const select = document.getElementById('commissionEmployee');
+            select.innerHTML = '<option value="">Loading...</option>';
+            tg.sendData(JSON.stringify({ action: 'get_employees' }));
+        }
+        
+        function updateCommissionDropdown(employees) {
+            const select = document.getElementById('commissionEmployee');
+            if (!employees || employees.length === 0) {
+                select.innerHTML = '<option value="">No employees available</option>';
+                return;
             }
+            let options = '<option value="">Select employee...</option>';
+            employees.forEach(name => {
+                options += `<option value="${name}">${name}</option>`;
+            });
+            select.innerHTML = options;
         }
         
         function clearForm(formId) {
@@ -300,6 +316,34 @@
             }, 2000);
         }
         
+        // استقبال البيانات من البوت
+        tg.onEvent('message', function(msg) {
+            try {
+                const data = JSON.parse(msg);
+                if (Array.isArray(data)) {
+                    employeesList = data;
+                    // تحديث القائمة في صفحة العمولات إذا كانت مفتوحة
+                    const commissionPage = document.getElementById('commissionPage');
+                    if (commissionPage && !commissionPage.classList.contains('hidden')) {
+                        updateCommissionDropdown(employeesList);
+                    }
+                    // تحديث قائمة الموظفين في صفحة الموظفين
+                    const employeesListContainer = document.getElementById('employeesList');
+                    if (employeesListContainer) {
+                        if (data.length === 0) {
+                            employeesListContainer.innerHTML = '<div style="text-align:center; padding:20px; color: var(--tg-theme-hint-color);">No employees yet</div>';
+                        } else {
+                            let html = '';
+                            data.forEach(name => {
+                                html += `<div style="background: var(--tg-theme-secondary-bg-color); border-radius:8px; padding:10px; margin-bottom:8px;">👤 ${name}</div>`;
+                            });
+                            employeesListContainer.innerHTML = html;
+                        }
+                    }
+                }
+            } catch(e) {}
+        });
+        
         // إضافة بوت
         document.getElementById('addForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -315,25 +359,23 @@
             tg.close();
         });
         
-        // إضافة موظف - يحفظ في localStorage وفي البوت
+        // إضافة موظف
         document.getElementById('employeeForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('employeeName').value.trim();
-            if (name && !employees.includes(name)) {
-                employees.push(name);
-                saveEmployees();
-                updateEmployeesList();
-                updateCommissionDropdown();
+            if (name) {
                 tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
                 showToast('employeeToast', `✅ Employee "${name}" added!`);
                 clearForm('employeeForm');
                 document.getElementById('employeeName').focus();
-            } else if (employees.includes(name)) {
-                showToast('employeeToast', `❌ Employee "${name}" already exists!`, true);
+                // تحديث القائمة بعد الإضافة
+                setTimeout(() => {
+                    tg.sendData(JSON.stringify({ action: 'get_employees' }));
+                }, 500);
             }
         });
         
-        // إضافة عمولة - يبقى مفتوح
+        // إضافة عمولة
         document.getElementById('commissionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const employee = document.getElementById('commissionEmployee').value;
@@ -357,13 +399,11 @@
             }));
             showToast('commissionToast', `✅ Commission for ${employee} added!`);
             clearForm('commissionForm');
-            updateCommissionDropdown();
             document.getElementById('commissionAmount').focus();
         });
         
-        // تحديث القوائم عند البداية
-        updateEmployeesList();
-        updateCommissionDropdown();
+        // تحميل قائمة الموظفين في البداية
+        tg.sendData(JSON.stringify({ action: 'get_employees' }));
     </script>
 </body>
 </html>
