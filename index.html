@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Bot Management</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--tg-theme-bg-color);
             color: var(--tg-theme-text-color);
             padding: 16px;
@@ -56,9 +60,8 @@
             outline: none;
             box-sizing: border-box;
         }
-        textarea {
-            resize: vertical;
-            min-height: 80px;
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--tg-theme-button-color);
         }
         .button-group {
             display: flex;
@@ -84,6 +87,9 @@
             color: var(--tg-theme-text-color);
             border: 1px solid var(--tg-theme-hint-color);
         }
+        .btn:active {
+            opacity: 0.7;
+        }
         .main-buttons {
             display: flex;
             flex-direction: column;
@@ -104,13 +110,19 @@
         .hidden {
             display: none;
         }
-        .success-msg {
+        .success-toast {
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
             padding: 12px;
             border-radius: 10px;
             text-align: center;
             margin-top: 16px;
+            animation: fadeOut 2s ease forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; display: none; }
         }
     </style>
 </head>
@@ -171,7 +183,7 @@
         </form>
     </div>
 
-    <!-- صفحة الموظفين (بسيطة: خانة نص فقط) -->
+    <!-- صفحة الموظفين - يبقى مفتوح بعد الحفظ -->
     <div id="employeesPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
@@ -181,13 +193,14 @@
         <form id="employeeForm">
             <div class="form-group">
                 <label>Employee Name</label>
-                <input type="text" id="employeeName" placeholder="Enter employee name" required>
+                <input type="text" id="employeeName" placeholder="Enter employee name" required autofocus>
             </div>
             <div class="button-group">
                 <button type="button" class="btn btn-secondary" onclick="clearForm('employeeForm')">Clear</button>
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
         </form>
+        <div id="employeeToast" style="margin-top: 16px;"></div>
     </div>
 
     <!-- صفحة العمولات -->
@@ -215,6 +228,7 @@
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
         </form>
+        <div id="commissionToast" style="margin-top: 16px;"></div>
     </div>
 
     <script>
@@ -228,54 +242,97 @@
             document.getElementById('employeesPage').classList.add('hidden');
             document.getElementById('commissionPage').classList.add('hidden');
             document.getElementById(pageId).classList.remove('hidden');
+            
+            // Auto focus on input when opening employees page
+            if (pageId === 'employeesPage') {
+                setTimeout(() => {
+                    document.getElementById('employeeName').focus();
+                }, 100);
+            }
         }
 
         function clearForm(formId) {
             document.getElementById(formId).reset();
         }
 
-        // إضافة بوت
+        function showToast(elementId, message, isSuccess = true) {
+            const container = document.getElementById(elementId);
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.className = 'success-toast';
+            toast.style.background = isSuccess ? '#00a884' : '#e53935';
+            toast.style.color = 'white';
+            container.innerHTML = '';
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (container.firstChild === toast) {
+                    container.innerHTML = '';
+                }
+            }, 2000);
+        }
+
+        // إضافة بوت - يقفل الصفحة بعد الحفظ
         document.getElementById('addForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            const kingdom = document.getElementById('kingdom').value;
+            const alliance = document.getElementById('alliance').value;
+            const bots = parseInt(document.getElementById('bots').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const payment = document.getElementById('payment').value;
+            
+            if (!kingdom || !alliance || isNaN(bots) || isNaN(price)) {
+                showToast('addToast', 'Please fill all fields', false);
+                return;
+            }
+            
             tg.sendData(JSON.stringify({
                 action: 'add_bot_record',
-                kingdom: document.getElementById('kingdom').value,
-                alliance: document.getElementById('alliance').value,
-                bots: parseInt(document.getElementById('bots').value),
-                price: parseFloat(document.getElementById('price').value),
-                payment: document.getElementById('payment').value
+                kingdom: kingdom,
+                alliance: alliance,
+                bots: bots,
+                price: price,
+                payment: payment
             }));
             clearForm('addForm');
             tg.close();
         });
 
-        // إضافة موظف (بسيط: فقط اسم الموظف)
+        // إضافة موظف - يبقى مفتوح بعد الحفظ
         document.getElementById('employeeForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('employeeName').value.trim();
-            if (name) {
-                tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
-                clearForm('employeeForm');
-                tg.close();
+            
+            if (!name) {
+                showToast('employeeToast', 'Please enter employee name', false);
+                return;
             }
+            
+            tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
+            showToast('employeeToast', `✅ Employee "${name}" saved successfully!`, true);
+            clearForm('employeeForm');
+            document.getElementById('employeeName').focus();
         });
 
-        // إضافة عمولة
+        // إضافة عمولة - يقفل الصفحة بعد الحفظ
         document.getElementById('commissionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const employee = document.getElementById('commissionEmployee').value.trim();
             const amount = parseFloat(document.getElementById('commissionAmount').value);
             const note = document.getElementById('commissionNote').value;
-            if (employee && amount) {
-                tg.sendData(JSON.stringify({
-                    action: 'add_commission',
-                    employee: employee,
-                    amount: amount,
-                    note: note || ''
-                }));
-                clearForm('commissionForm');
-                tg.close();
+            
+            if (!employee || isNaN(amount) || amount <= 0) {
+                showToast('commissionToast', 'Please enter employee name and valid amount', false);
+                return;
             }
+            
+            tg.sendData(JSON.stringify({
+                action: 'add_commission',
+                employee: employee,
+                amount: amount,
+                note: note || ''
+            }));
+            clearForm('commissionForm');
+            tg.close();
         });
     </script>
 </body>
