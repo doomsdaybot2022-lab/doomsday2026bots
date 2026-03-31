@@ -235,7 +235,7 @@
             <div class="form-group">
                 <label>Employee</label>
                 <select id="commissionEmployee" required>
-                    <option value="">Loading employees...</option>
+                    <option value="">Select employee...</option>
                 </select>
             </div>
             <div class="form-group">
@@ -287,6 +287,21 @@
             container.innerHTML = html;
         }
         
+        function updateCommissionDropdown() {
+            const select = document.getElementById('commissionEmployee');
+            if (!select) return;
+            
+            if (employees.length === 0) {
+                select.innerHTML = '<option value="">No employees available</option>';
+                return;
+            }
+            let options = '<option value="">Select employee...</option>';
+            employees.forEach(name => {
+                options += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+            });
+            select.innerHTML = options;
+        }
+        
         function escapeHtml(text) {
             if (!text) return '';
             return text.replace(/[&<>]/g, function(m) {
@@ -317,28 +332,7 @@
         
         function openCommissionPage() {
             showPage('commissionPage');
-            loadEmployeesFromBot();
-        }
-        
-        function loadEmployeesFromBot() {
-            const select = document.getElementById('commissionEmployee');
-            select.innerHTML = '<option value="">Loading employees...</option>';
-            tg.sendData(JSON.stringify({ action: 'get_employees' }));
-        }
-        
-        function updateCommissionDropdown(employeesList) {
-            const select = document.getElementById('commissionEmployee');
-            if (!select) return;
-            
-            if (!employeesList || employeesList.length === 0) {
-                select.innerHTML = '<option value="">No employees available</option>';
-                return;
-            }
-            let options = '<option value="">Select employee...</option>';
-            employeesList.forEach(name => {
-                options += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
-            });
-            select.innerHTML = options;
+            updateCommissionDropdown();
         }
         
         function clearForm(formId) {
@@ -364,22 +358,6 @@
                 }
             }, 2000);
         }
-        
-        // Receive data from bot
-        tg.onEvent('message', function(msg) {
-            try {
-                const data = JSON.parse(msg);
-                if (Array.isArray(data)) {
-                    updateCommissionDropdown(data);
-                    // Also update localStorage to keep in sync
-                    employees = data;
-                    saveEmployees();
-                    updateEmployeesList();
-                }
-            } catch(e) {
-                // Not JSON, ignore
-            }
-        });
         
         // Add bot record
         const addForm = document.getElementById('addForm');
@@ -429,6 +407,7 @@
                     employees.push(name);
                     saveEmployees();
                     updateEmployeesList();
+                    updateCommissionDropdown();
                     
                     tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
                     showToast('employeeToast', `✅ Employee "${escapeHtml(name)}" added!`);
@@ -471,7 +450,6 @@
                 showToast('commissionToast', `✅ Commission for ${escapeHtml(employee)} added!`);
                 clearForm('commissionForm');
                 
-                // Reset dropdown to default
                 const select = document.getElementById('commissionEmployee');
                 if (select) select.value = '';
                 document.getElementById('commissionAmount')?.focus();
@@ -480,6 +458,10 @@
         
         // Initial load
         updateEmployeesList();
+        updateCommissionDropdown();
+        
+        // Sync employees from bot on start (optional, can be removed)
+        // We don't send any request to bot to avoid chat messages
     </script>
 </body>
 </html>
