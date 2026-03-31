@@ -87,6 +87,10 @@
             background: #f39c12;
             color: white;
         }
+        .btn-danger {
+            background: #e53935;
+            color: white;
+        }
         .main-buttons {
             display: flex;
             flex-direction: column;
@@ -177,13 +181,17 @@
             color: var(--tg-theme-hint-color);
             margin-bottom: 8px;
         }
-        .restart-btn {
+        .action-buttons {
             position: absolute;
             top: 12px;
             right: 12px;
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
             background: none;
             border: none;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             color: var(--tg-theme-link-color);
             padding: 4px 8px;
@@ -251,7 +259,10 @@
     <div id="goldSalePage" class="hidden">
         <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Sell Gold</div><div style="width:32px"></div></div>
         <div class="gold-balance">
-            <button class="restart-btn" onclick="restartBot()" title="Refresh from Excel">🔄</button>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="refreshBalance()" title="Refresh from Excel">🔄</button>
+                <button class="action-btn" onclick="clearCache()" title="Clear Cache and Reload">🗑️</button>
+            </div>
             <div class="balance-label">Current Gold Balance</div>
             <div class="balance-amount" id="goldBalance">0</div>
         </div>
@@ -278,6 +289,7 @@
         let employees = [];
         let goldBalance = 0;
         
+        // Load from localStorage
         try {
             employees = JSON.parse(localStorage.getItem('employees') || '[]');
             goldBalance = parseInt(localStorage.getItem('goldBalance') || '0');
@@ -321,10 +333,23 @@
             select.innerHTML = opts;
         }
         
-        function restartBot() {
+        function refreshBalance() {
             const balanceEl = document.getElementById('goldBalance');
             balanceEl.textContent = 'Loading...';
             tg.sendData(JSON.stringify({ action: 'restart_bot' }));
+        }
+        
+        function clearCache() {
+            if (confirm('Clear all cached data? This will reset the balance and employee list to match the Excel file.')) {
+                localStorage.clear();
+                employees = [];
+                goldBalance = 0;
+                updateEmployeesList();
+                updateCommissionDropdown();
+                document.getElementById('goldBalance').textContent = '0';
+                showToast('goldToast', '✅ Cache cleared! Click Refresh to load from Excel');
+                refreshBalance();
+            }
         }
         
         function showPage(id) {
