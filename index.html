@@ -60,9 +60,6 @@
             outline: none;
             box-sizing: border-box;
         }
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--tg-theme-button-color);
-        }
         .button-group {
             display: flex;
             gap: 12px;
@@ -164,7 +161,6 @@
             padding: 16px;
             margin-bottom: 20px;
             text-align: center;
-            position: relative;
         }
         .balance-amount {
             font-size: 28px;
@@ -176,18 +172,6 @@
             color: var(--tg-theme-hint-color);
             margin-bottom: 8px;
         }
-        .refresh-balance-btn {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: var(--tg-theme-link-color);
-            padding: 4px 8px;
-            border-radius: 8px;
-        }
         .error-msg {
             color: #e53935;
             font-size: 14px;
@@ -198,13 +182,8 @@
 </head>
 <body>
 
-    <!-- Main Page -->
     <div id="mainPage">
-        <div class="header">
-            <div></div>
-            <div class="page-title">Control Panel</div>
-            <div style="width: 32px;"></div>
-        </div>
+        <div class="header"><div></div><div class="page-title">Control Panel</div><div style="width:32px"></div></div>
         <div class="main-buttons">
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
             <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
@@ -213,140 +192,62 @@
         </div>
     </div>
 
-    <!-- Add Bot Record Page -->
     <div id="addPage" class="hidden">
-        <div class="header">
-            <button class="back-btn" onclick="showPage('mainPage')">←</button>
-            <div class="page-title">Add Bot Record</div>
-            <div style="width: 32px;"></div>
-        </div>
+        <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Add Bot Record</div><div style="width:32px"></div></div>
         <form id="addForm">
-            <div class="form-group">
-                <label>Kingdom (K)</label>
-                <input type="text" id="kingdom" placeholder="Enter kingdom name" required>
-            </div>
-            <div class="form-group">
-                <label>Alliance Name</label>
-                <input type="text" id="alliance" placeholder="Enter alliance name" required>
-            </div>
-            <div class="form-group">
-                <label>Number of Bots</label>
-                <input type="number" id="bots" placeholder="Number of bots" min="0" required>
-            </div>
-            <div class="form-group">
-                <label>Price</label>
-                <input type="number" id="price" placeholder="Price" min="0" step="0.01" required>
-            </div>
-            <div class="form-group">
-                <label>Payment Method</label>
+            <div class="form-group"><label>Kingdom (K)</label><input type="text" id="kingdom" required></div>
+            <div class="form-group"><label>Alliance Name</label><input type="text" id="alliance" required></div>
+            <div class="form-group"><label>Number of Bots</label><input type="number" id="bots" min="0" required></div>
+            <div class="form-group"><label>Price</label><input type="number" id="price" min="0" step="0.01" required></div>
+            <div class="form-group"><label>Payment Method</label>
                 <select id="payment">
-                    <option value="paypal">PayPal</option>
-                    <option value="russia">Russia</option>
-                    <option value="usdt">USDT</option>
-                    <option value="gold">Gold</option>
-                    <option value="other">Other</option>
+                    <option value="paypal">PayPal</option><option value="russia">Russia</option>
+                    <option value="usdt">USDT</option><option value="gold">Gold</option><option value="other">Other</option>
                 </select>
             </div>
-            <div class="button-group">
-                <button type="button" class="btn btn-secondary" onclick="clearForm('addForm')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </div>
+            <div class="button-group"><button type="button" class="btn btn-secondary" onclick="clearForm('addForm')">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
         </form>
         <div id="addToast"></div>
     </div>
 
-    <!-- Employees Page -->
     <div id="employeesPage" class="hidden">
-        <div class="header">
-            <button class="back-btn" onclick="showPage('mainPage')">←</button>
-            <div class="page-title">Employees</div>
-            <div style="width: 32px;"></div>
-        </div>
+        <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Employees</div><div style="width:32px"></div></div>
         <div id="employeesList" class="employee-list"></div>
         <form id="employeeForm">
-            <div class="form-group">
-                <label>Add New Employee</label>
-                <input type="text" id="employeeName" placeholder="Enter employee name" required autofocus>
-            </div>
-            <div class="button-group">
-                <button type="button" class="btn btn-secondary" onclick="clearForm('employeeForm')">Clear</button>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </div>
+            <div class="form-group"><label>Add New Employee</label><input type="text" id="employeeName" required autofocus></div>
+            <div class="button-group"><button type="button" class="btn btn-secondary" onclick="clearForm('employeeForm')">Clear</button><button type="submit" class="btn btn-primary">Save</button></div>
         </form>
         <div id="employeeToast"></div>
     </div>
 
-    <!-- Commissions Page -->
     <div id="commissionPage" class="hidden">
-        <div class="header">
-            <button class="back-btn" onclick="showPage('mainPage')">←</button>
-            <div class="page-title">Commissions</div>
-            <div style="width: 32px;"></div>
-        </div>
+        <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Commissions</div><div style="width:32px"></div></div>
         <form id="commissionForm">
-            <div class="form-group">
-                <label>Employee</label>
-                <select id="commissionEmployee" required>
-                    <option value="">Select employee...</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Amount</label>
-                <input type="number" id="commissionAmount" placeholder="Enter amount" min="0" step="0.01" required>
-            </div>
-            <div class="form-group">
-                <label>Note (Optional)</label>
-                <textarea id="commissionNote" placeholder="Enter notes..."></textarea>
-            </div>
-            <div class="button-group">
-                <button type="button" class="btn btn-secondary" onclick="clearForm('commissionForm')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </div>
+            <div class="form-group"><label>Employee</label><select id="commissionEmployee"><option value="">Select employee...</option></select></div>
+            <div class="form-group"><label>Amount</label><input type="number" id="commissionAmount" min="0" step="0.01" required></div>
+            <div class="form-group"><label>Note</label><textarea id="commissionNote"></textarea></div>
+            <div class="button-group"><button type="button" class="btn btn-secondary" onclick="clearForm('commissionForm')">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
         </form>
         <div id="commissionToast"></div>
     </div>
 
-    <!-- Gold Sale Page -->
     <div id="goldSalePage" class="hidden">
-        <div class="header">
-            <button class="back-btn" onclick="showPage('mainPage')">←</button>
-            <div class="page-title">Sell Gold</div>
-            <div style="width: 32px;"></div>
-        </div>
-        
+        <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Sell Gold</div><div style="width:32px"></div></div>
         <div class="gold-balance">
-            <button class="refresh-balance-btn" onclick="refreshGoldBalance()" title="Refresh from Excel">🔄</button>
             <div class="balance-label">Current Gold Balance</div>
             <div class="balance-amount" id="goldBalance">0</div>
         </div>
-        
         <form id="goldSaleForm">
-            <div class="form-group">
-                <label>Amount to Sell</label>
-                <input type="number" id="goldAmount" placeholder="Enter amount" min="0" step="1" required>
-                <div id="amountError" class="error-msg" style="display: none;"></div>
-            </div>
-            <div class="form-group">
-                <label>Price (USD)</label>
-                <input type="number" id="goldPrice" placeholder="Enter price" min="0" step="0.01" required>
-            </div>
-            <div class="form-group">
-                <label>Payment Method</label>
+            <div class="form-group"><label>Amount to Sell</label><input type="number" id="goldAmount" min="0" step="1" required><div id="amountError" class="error-msg" style="display:none"></div></div>
+            <div class="form-group"><label>Price (USD)</label><input type="number" id="goldPrice" min="0" step="0.01" required></div>
+            <div class="form-group"><label>Payment Method</label>
                 <select id="goldPayment">
-                    <option value="paypal">PayPal</option>
-                    <option value="russia">Russia</option>
-                    <option value="usdt">USDT</option>
-                    <option value="other">Other</option>
+                    <option value="paypal">PayPal</option><option value="russia">Russia</option>
+                    <option value="usdt">USDT</option><option value="other">Other</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label>Note (Optional)</label>
-                <textarea id="goldNote" placeholder="Enter notes..."></textarea>
-            </div>
-            <div class="button-group">
-                <button type="button" class="btn btn-secondary" onclick="clearForm('goldSaleForm')">Cancel</button>
-                <button type="submit" class="btn btn-primary">Sell</button>
-            </div>
+            <div class="form-group"><label>Note</label><textarea id="goldNote"></textarea></div>
+            <div class="button-group"><button type="button" class="btn btn-secondary" onclick="clearForm('goldSaleForm')">Cancel</button><button type="submit" class="btn btn-primary">Sell</button></div>
         </form>
         <div id="goldToast"></div>
     </div>
@@ -359,321 +260,145 @@
         let employees = [];
         let goldBalance = 0;
         
-        // Load from localStorage
         try {
             employees = JSON.parse(localStorage.getItem('employees') || '[]');
             goldBalance = parseInt(localStorage.getItem('goldBalance') || '0');
-        } catch(e) {
-            employees = [];
-            goldBalance = 0;
-        }
+        } catch(e) {}
         
-        function saveEmployees() {
-            localStorage.setItem('employees', JSON.stringify(employees));
-        }
-        
-        function saveGoldBalance() {
+        function saveEmployees() { localStorage.setItem('employees', JSON.stringify(employees)); }
+        function saveGoldBalance() { 
             localStorage.setItem('goldBalance', goldBalance.toString());
-            const balanceEl = document.getElementById('goldBalance');
-            if (balanceEl) {
-                balanceEl.textContent = goldBalance.toLocaleString();
-            }
+            const el = document.getElementById('goldBalance');
+            if (el) el.textContent = goldBalance.toLocaleString();
         }
         
         function updateEmployeesList() {
             const container = document.getElementById('employeesList');
             if (!container) return;
-            
-            if (employees.length === 0) {
-                container.innerHTML = '<div class="empty-list">📭 No employees yet</div>';
-                return;
-            }
+            if (employees.length === 0) { container.innerHTML = '<div class="empty-list">📭 No employees yet</div>'; return; }
             let html = '';
-            employees.forEach((name, index) => {
-                html += `
-                    <div class="employee-item">
-                        <span class="employee-name">👤 ${escapeHtml(name)}</span>
-                        <button class="delete-btn" onclick="deleteEmployee('${escapeHtml(name)}', ${index})">Delete</button>
-                    </div>
-                `;
+            employees.forEach((name, idx) => {
+                html += `<div class="employee-item"><span class="employee-name">👤 ${escapeHtml(name)}</span><button class="delete-btn" onclick="deleteEmployee('${escapeHtml(name)}', ${idx})">Delete</button></div>`;
             });
             container.innerHTML = html;
         }
         
-        function deleteEmployee(name, index) {
-            if (confirm(`Delete employee "${name}"?`)) {
-                employees.splice(index, 1);
+        function deleteEmployee(name, idx) {
+            if (confirm(`Delete "${name}"?`)) {
+                employees.splice(idx, 1);
                 saveEmployees();
                 updateEmployeesList();
                 updateCommissionDropdown();
                 tg.sendData(JSON.stringify({ action: 'delete_employee', name: name }));
-                showToast('employeeToast', `✅ Employee "${escapeHtml(name)}" deleted!`);
+                showToast('employeeToast', `✅ Deleted "${escapeHtml(name)}"`);
             }
         }
         
         function updateCommissionDropdown() {
             const select = document.getElementById('commissionEmployee');
             if (!select) return;
-            
-            if (employees.length === 0) {
-                select.innerHTML = '<option value="">No employees available</option>';
-                return;
-            }
-            let options = '<option value="">Select employee...</option>';
-            employees.forEach(name => {
-                options += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
-            });
-            select.innerHTML = options;
+            if (employees.length === 0) { select.innerHTML = '<option value="">No employees</option>'; return; }
+            let opts = '<option value="">Select...</option>';
+            employees.forEach(n => { opts += `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`; });
+            select.innerHTML = opts;
         }
         
-        function refreshGoldBalance() {
-            const balanceEl = document.getElementById('goldBalance');
-            balanceEl.textContent = 'Loading...';
-            tg.sendData(JSON.stringify({ action: 'get_gold_balance' }));
+        function showPage(id) {
+            ['mainPage','addPage','employeesPage','commissionPage','goldSalePage'].forEach(p => document.getElementById(p).classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'employeesPage') { updateEmployeesList(); setTimeout(() => document.getElementById('employeeName')?.focus(), 100); }
+            if (id === 'commissionPage') updateCommissionDropdown();
+            if (id === 'goldSalePage') document.getElementById('goldBalance').textContent = goldBalance.toLocaleString();
         }
         
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
+        function openCommissionPage() { showPage('commissionPage'); }
+        function openGoldSalePage() { showPage('goldSalePage'); }
+        function clearForm(id) { document.getElementById(id).reset(); document.getElementById('amountError') && (document.getElementById('amountError').style.display = 'none'); }
+        function escapeHtml(t) { if(!t)return ''; return t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
         
-        function showPage(pageId) {
-            const pages = ['mainPage', 'addPage', 'employeesPage', 'commissionPage', 'goldSalePage'];
-            pages.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
-            });
-            const target = document.getElementById(pageId);
-            if (target) target.classList.remove('hidden');
-            
-            if (pageId === 'employeesPage') {
-                updateEmployeesList();
-                setTimeout(() => {
-                    const input = document.getElementById('employeeName');
-                    if (input) input.focus();
-                }, 100);
-            }
-            if (pageId === 'commissionPage') {
-                updateCommissionDropdown();
-            }
-            if (pageId === 'goldSalePage') {
-                const balanceEl = document.getElementById('goldBalance');
-                balanceEl.textContent = goldBalance.toLocaleString();
-            }
-        }
-        
-        function openCommissionPage() {
-            showPage('commissionPage');
-        }
-        
-        function openGoldSalePage() {
-            showPage('goldSalePage');
-        }
-        
-        function clearForm(formId) {
-            const form = document.getElementById(formId);
-            if (form) form.reset();
-            const errorDiv = document.getElementById('amountError');
-            if (errorDiv) errorDiv.style.display = 'none';
-        }
-        
-        function showToast(containerId, message, isError = false) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            
+        function showToast(containerId, msg, isErr = false) {
+            const c = document.getElementById(containerId);
+            if (!c) return;
             const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.className = 'toast';
-            if (isError) toast.classList.add('error');
-            
-            container.innerHTML = '';
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                if (container.firstChild === toast) {
-                    container.innerHTML = '';
-                }
-            }, 2000);
+            toast.textContent = msg;
+            toast.className = 'toast' + (isErr ? ' error' : '');
+            c.innerHTML = '';
+            c.appendChild(toast);
+            setTimeout(() => { if (c.firstChild === toast) c.innerHTML = ''; }, 2000);
         }
-        
-        // Receive data from bot - this catches all messages
-        tg.onEvent('message', function(msg) {
-            console.log("Received:", msg);
-            try {
-                const data = JSON.parse(msg);
-                if (data.type === 'gold_balance') {
-                    goldBalance = data.balance;
-                    saveGoldBalance();
-                    const balanceEl = document.getElementById('goldBalance');
-                    if (balanceEl) {
-                        balanceEl.textContent = goldBalance.toLocaleString();
-                    }
-                    showToast('goldToast', `✅ Balance updated: ${goldBalance.toLocaleString()} gold`);
-                }
-            } catch(e) {
-                // Not JSON, ignore
-                console.log("Not JSON:", msg);
-            }
-        });
         
         // Add bot record
-        const addForm = document.getElementById('addForm');
-        if (addForm) {
-            addForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const kingdom = document.getElementById('kingdom')?.value || '';
-                const alliance = document.getElementById('alliance')?.value || '';
-                const bots = parseInt(document.getElementById('bots')?.value || '0');
-                const price = parseFloat(document.getElementById('price')?.value || '0');
-                const payment = document.getElementById('payment')?.value || '';
-                
-                if (!kingdom || !alliance || isNaN(bots) || isNaN(price)) {
-                    showToast('addToast', 'Please fill all fields', true);
-                    return;
-                }
-                
-                // If payment is gold, update local gold balance
-                if (payment === 'gold') {
-                    goldBalance += price;
-                    saveGoldBalance();
-                }
-                
-                tg.sendData(JSON.stringify({
-                    action: 'add_bot_record',
-                    kingdom: kingdom,
-                    alliance: alliance,
-                    bots: bots,
-                    price: price,
-                    payment: payment
-                }));
-                
-                clearForm('addForm');
-                tg.close();
-            });
-        }
+        document.getElementById('addForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const kingdom = document.getElementById('kingdom').value;
+            const alliance = document.getElementById('alliance').value;
+            const bots = parseInt(document.getElementById('bots').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const payment = document.getElementById('payment').value;
+            if (!kingdom || !alliance || isNaN(bots) || isNaN(price)) { showToast('addToast', 'Fill all fields', true); return; }
+            if (payment === 'gold') { goldBalance += price; saveGoldBalance(); }
+            tg.sendData(JSON.stringify({ action: 'add_bot_record', kingdom, alliance, bots, price, payment }));
+            clearForm('addForm');
+            tg.close();
+        });
         
         // Add employee
-        const employeeForm = document.getElementById('employeeForm');
-        if (employeeForm) {
-            employeeForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const name = document.getElementById('employeeName')?.value.trim();
-                
-                if (!name) {
-                    showToast('employeeToast', 'Please enter employee name', true);
-                    return;
-                }
-                
-                if (!employees.includes(name)) {
-                    employees.push(name);
-                    saveEmployees();
-                    updateEmployeesList();
-                    updateCommissionDropdown();
-                    
-                    tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
-                    showToast('employeeToast', `✅ Employee "${escapeHtml(name)}" added!`);
-                    clearForm('employeeForm');
-                    
-                    const input = document.getElementById('employeeName');
-                    if (input) input.focus();
-                } else {
-                    showToast('employeeToast', `❌ Employee "${escapeHtml(name)}" already exists!`, true);
-                }
-            });
-        }
+        document.getElementById('employeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('employeeName').value.trim();
+            if (!name) { showToast('employeeToast', 'Enter name', true); return; }
+            if (!employees.includes(name)) {
+                employees.push(name);
+                saveEmployees();
+                updateEmployeesList();
+                updateCommissionDropdown();
+                tg.sendData(JSON.stringify({ action: 'add_employee', name }));
+                showToast('employeeToast', `✅ Added "${escapeHtml(name)}"`);
+                clearForm('employeeForm');
+                document.getElementById('employeeName').focus();
+            } else { showToast('employeeToast', `❌ "${name}" exists`, true); }
+        });
         
         // Add commission
-        const commissionForm = document.getElementById('commissionForm');
-        if (commissionForm) {
-            commissionForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const employee = document.getElementById('commissionEmployee')?.value;
-                const amount = parseFloat(document.getElementById('commissionAmount')?.value || '0');
-                const note = document.getElementById('commissionNote')?.value || '';
-                
-                if (!employee) {
-                    showToast('commissionToast', 'Please select an employee', true);
-                    return;
-                }
-                if (!amount || amount <= 0) {
-                    showToast('commissionToast', 'Please enter a valid amount', true);
-                    return;
-                }
-                
-                tg.sendData(JSON.stringify({
-                    action: 'add_commission',
-                    employee: employee,
-                    amount: amount,
-                    note: note
-                }));
-                
-                showToast('commissionToast', `✅ Commission for ${escapeHtml(employee)} added!`);
-                clearForm('commissionForm');
-                
-                const select = document.getElementById('commissionEmployee');
-                if (select) select.value = '';
-                document.getElementById('commissionAmount')?.focus();
-            });
-        }
+        document.getElementById('commissionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const emp = document.getElementById('commissionEmployee').value;
+            const amt = parseFloat(document.getElementById('commissionAmount').value);
+            const note = document.getElementById('commissionNote').value;
+            if (!emp) { showToast('commissionToast', 'Select employee', true); return; }
+            if (!amt || amt <= 0) { showToast('commissionToast', 'Enter amount', true); return; }
+            tg.sendData(JSON.stringify({ action: 'add_commission', employee: emp, amount: amt, note }));
+            showToast('commissionToast', `✅ Commission for ${escapeHtml(emp)} added`);
+            clearForm('commissionForm');
+            document.getElementById('commissionEmployee').value = '';
+            document.getElementById('commissionAmount').focus();
+        });
         
         // Gold Sale
-        const goldSaleForm = document.getElementById('goldSaleForm');
-        if (goldSaleForm) {
-            goldSaleForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const amount = parseInt(document.getElementById('goldAmount')?.value || '0');
-                const price = parseFloat(document.getElementById('goldPrice')?.value || '0');
-                const payment = document.getElementById('goldPayment')?.value;
-                const note = document.getElementById('goldNote')?.value || '';
-                
-                if (!amount || amount <= 0) {
-                    showToast('goldToast', 'Please enter a valid amount', true);
-                    return;
-                }
-                if (amount > goldBalance) {
-                    const errorDiv = document.getElementById('amountError');
-                    if (errorDiv) {
-                        errorDiv.textContent = `Insufficient balance! Available: ${goldBalance.toLocaleString()}`;
-                        errorDiv.style.display = 'block';
-                    }
-                    return;
-                }
-                if (!price || price <= 0) {
-                    showToast('goldToast', 'Please enter a valid price', true);
-                    return;
-                }
-                
-                // Update local balance
-                goldBalance -= amount;
-                saveGoldBalance();
-                
-                tg.sendData(JSON.stringify({
-                    action: 'add_gold_sale',
-                    amount: amount,
-                    price: price,
-                    payment: payment,
-                    note: note
-                }));
-                
-                showToast('goldToast', `✅ Sold ${amount.toLocaleString()} gold for $${price}!`);
-                clearForm('goldSaleForm');
-            });
-        }
+        document.getElementById('goldSaleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = parseInt(document.getElementById('goldAmount').value);
+            const price = parseFloat(document.getElementById('goldPrice').value);
+            const payment = document.getElementById('goldPayment').value;
+            const note = document.getElementById('goldNote').value;
+            if (!amount || amount <= 0) { showToast('goldToast', 'Enter amount', true); return; }
+            if (amount > goldBalance) {
+                const err = document.getElementById('amountError');
+                err.textContent = `Insufficient! Available: ${goldBalance.toLocaleString()}`;
+                err.style.display = 'block';
+                return;
+            }
+            if (!price || price <= 0) { showToast('goldToast', 'Enter price', true); return; }
+            goldBalance -= amount;
+            saveGoldBalance();
+            tg.sendData(JSON.stringify({ action: 'add_gold_sale', amount, price, payment, note }));
+            showToast('goldToast', `✅ Sold ${amount.toLocaleString()} gold for $${price}`);
+            clearForm('goldSaleForm');
+        });
         
-        // Initial load
         updateEmployeesList();
         updateCommissionDropdown();
-        const balanceEl = document.getElementById('goldBalance');
-        if (balanceEl) balanceEl.textContent = goldBalance.toLocaleString();
+        document.getElementById('goldBalance').textContent = goldBalance.toLocaleString();
     </script>
 </body>
 </html>
