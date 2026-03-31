@@ -56,7 +56,7 @@
             color: var(--tg-theme-hint-color);
         }
         
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid var(--tg-theme-hint-color);
@@ -68,7 +68,7 @@
             transition: border-color 0.2s;
         }
         
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             border-color: var(--tg-theme-button-color);
         }
         
@@ -136,6 +136,11 @@
         .hidden {
             display: none;
         }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
     </style>
 </head>
 <body>
@@ -148,16 +153,16 @@
         </div>
         <div class="main-buttons">
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
-            <button class="main-btn" onclick="showPage('listPage')">📋 LIST</button>
-            <button class="main-btn" onclick="showPage('statsPage')">📊 STATS</button>
+            <button class="main-btn" onclick="loadEmployees()">👥 EMPLOYEES</button>
+            <button class="main-btn" onclick="showPage('commissionPage')">💰 COMMISSIONS</button>
         </div>
     </div>
 
-    <!-- Add Record Page -->
+    <!-- Add Record Page (Bots) -->
     <div id="addPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
-            <div class="page-title">Add New Record</div>
+            <div class="page-title">Add Bot Record</div>
             <div style="width: 32px;"></div>
         </div>
         
@@ -194,30 +199,65 @@
             </div>
             
             <div class="button-group">
-                <button type="button" class="btn btn-secondary" onclick="clearForm()">Cancel</button>
+                <button type="button" class="btn btn-secondary" onclick="clearForm('addForm')">Cancel</button>
                 <button type="submit" class="btn btn-primary">Save</button>
             </div>
         </form>
     </div>
 
-    <!-- List Page (coming next) -->
-    <div id="listPage" class="hidden">
+    <!-- Employees Page -->
+    <div id="employeesPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
-            <div class="page-title">Records List</div>
+            <div class="page-title">Employees</div>
             <div style="width: 32px;"></div>
         </div>
-        <div id="listContent">Loading...</div>
+        
+        <div id="employeesList" style="margin-bottom: 20px;"></div>
+        
+        <form id="employeeForm">
+            <div class="form-group">
+                <label>Employee Name</label>
+                <input type="text" id="employeeName" placeholder="Enter employee name" required>
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="clearForm('employeeForm')">Clear</button>
+                <button type="submit" class="btn btn-primary">Add Employee</button>
+            </div>
+        </form>
     </div>
 
-    <!-- Stats Page (coming next) -->
-    <div id="statsPage" class="hidden">
+    <!-- Commissions Page -->
+    <div id="commissionPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
-            <div class="page-title">Statistics</div>
+            <div class="page-title">Commissions</div>
             <div style="width: 32px;"></div>
         </div>
-        <div id="statsContent">Loading...</div>
+        
+        <form id="commissionForm">
+            <div class="form-group">
+                <label>Employee</label>
+                <select id="commissionEmployee" required>
+                    <option value="">Select employee...</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Commission Amount</label>
+                <input type="number" id="commissionAmount" placeholder="Enter commission amount" min="0" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Note (Optional)</label>
+                <textarea id="commissionNote" placeholder="Enter any notes..."></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="clearForm('commissionForm')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+        </form>
     </div>
 
     <script>
@@ -228,100 +268,101 @@
         function showPage(pageId) {
             document.getElementById('mainPage').classList.add('hidden');
             document.getElementById('addPage').classList.add('hidden');
-            document.getElementById('listPage').classList.add('hidden');
-            document.getElementById('statsPage').classList.add('hidden');
+            document.getElementById('employeesPage').classList.add('hidden');
+            document.getElementById('commissionPage').classList.add('hidden');
             document.getElementById(pageId).classList.remove('hidden');
-            
-            if (pageId === 'listPage') {
-                loadList();
-            } else if (pageId === 'statsPage') {
-                loadStats();
-            }
         }
         
-        function clearForm() {
-            document.getElementById('addForm').reset();
+        function clearForm(formId) {
+            document.getElementById(formId).reset();
         }
         
-        // Handle form submission
+        function loadEmployees() {
+            tg.sendData(JSON.stringify({action: 'get_employees'}));
+            showPage('employeesPage');
+        }
+        
+        // Add Bot Record
         document.getElementById('addForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const data = {
-                action: 'add_record',
+                action: 'add_bot_record',
                 kingdom: document.getElementById('kingdom').value,
                 alliance: document.getElementById('alliance').value,
                 bots: parseInt(document.getElementById('bots').value),
                 price: parseFloat(document.getElementById('price').value),
                 payment: document.getElementById('payment').value
             };
-            
             tg.sendData(JSON.stringify(data));
-            
-            // Show success and clear
-            tg.showPopup({
-                title: 'Success',
-                message: 'Record saved successfully!',
-                buttons: [{type: 'ok'}]
-            });
-            
-            clearForm();
+            clearForm('addForm');
+            tg.close();
         });
         
-        function loadList() {
-            tg.sendData(JSON.stringify({action: 'get_list'}));
-        }
+        // Add Employee
+        document.getElementById('employeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('employeeName').value.trim();
+            if (name) {
+                tg.sendData(JSON.stringify({
+                    action: 'add_employee',
+                    name: name
+                }));
+                clearForm('employeeForm');
+                document.getElementById('employeeName').value = '';
+                loadEmployees();
+            }
+        });
         
-        function loadStats() {
-            tg.sendData(JSON.stringify({action: 'get_stats'}));
-        }
+        // Add Commission
+        document.getElementById('commissionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const employee = document.getElementById('commissionEmployee').value;
+            const amount = parseFloat(document.getElementById('commissionAmount').value);
+            const note = document.getElementById('commissionNote').value;
+            
+            if (employee && amount) {
+                tg.sendData(JSON.stringify({
+                    action: 'add_commission',
+                    employee: employee,
+                    amount: amount,
+                    note: note || ''
+                }));
+                clearForm('commissionForm');
+                tg.close();
+            }
+        });
         
         // Receive data from bot
         window.receiveData = function(data) {
-            if (data.type === 'list') {
-                displayList(data.content);
-            } else if (data.type === 'stats') {
-                displayStats(data.content);
+            if (data.type === 'employees_list') {
+                displayEmployees(data.content);
             }
         };
         
-        function displayList(records) {
-            const container = document.getElementById('listContent');
-            if (!records || records.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:40px;">No records found</div>';
+        function displayEmployees(employees) {
+            const container = document.getElementById('employeesList');
+            const select = document.getElementById('commissionEmployee');
+            
+            if (!employees || employees.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:20px; color: var(--tg-theme-hint-color);">No employees yet</div>';
+                select.innerHTML = '<option value="">No employees available</option>';
                 return;
             }
             
-            let html = '';
-            records.forEach(record => {
-                html += `
-                    <div style="background: var(--tg-theme-secondary-bg-color); border-radius:12px; padding:12px; margin-bottom:12px;">
-                        <div><strong>Kingdom:</strong> ${record.kingdom}</div>
-                        <div><strong>Alliance:</strong> ${record.alliance}</div>
-                        <div><strong>Bots:</strong> ${record.bots}</div>
-                        <div><strong>Price:</strong> $${record.price}</div>
-                        <div><strong>Payment:</strong> ${record.payment}</div>
-                        <div><strong>Date:</strong> ${record.date}</div>
-                    </div>
-                `;
+            // Display list
+            let html = '<div style="margin-bottom: 15px;">';
+            employees.forEach(emp => {
+                html += `<div style="background: var(--tg-theme-secondary-bg-color); border-radius:8px; padding:10px; margin-bottom:8px;">👤 ${emp.name}</div>`;
             });
+            html += '</div>';
             container.innerHTML = html;
-        }
-        
-        function displayStats(stats) {
-            const container = document.getElementById('statsContent');
-            container.innerHTML = `
-                <div style="background: var(--tg-theme-secondary-bg-color); border-radius:12px; padding:16px; margin-bottom:12px;">
-                    <h3>Summary</h3>
-                    <div>Total Records: ${stats.total_records}</div>
-                    <div>Total Bots: ${stats.total_bots}</div>
-                    <div>Total Revenue: $${stats.total_revenue}</div>
-                </div>
-                <div style="background: var(--tg-theme-secondary-bg-color); border-radius:12px; padding:16px;">
-                    <h3>By Payment Method</h3>
-                    ${Object.entries(stats.by_payment).map(([method, count]) => `<div>${method}: ${count}</div>`).join('')}
-                </div>
-            `;
+            
+            // Update dropdown
+            let options = '<option value="">Select employee...</option>';
+            employees.forEach(emp => {
+                options += `<option value="${emp.name}">${emp.name}</option>`;
+            });
+            select.innerHTML = options;
         }
     </script>
 </body>
