@@ -444,4 +444,384 @@
         updateCommissionDropdown();
     </script>
 </body>
+</html>        }
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+        .btn-secondary {
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            border: 1px solid var(--tg-theme-hint-color);
+        }
+        .main-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .main-btn {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+        .toast {
+            background: #00a884;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 16px;
+            animation: fadeOut 2s ease forwards;
+        }
+        .toast.error {
+            background: #e53935;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; display: none; }
+        }
+        .employee-list {
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .employee-item {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .employee-name {
+            flex: 1;
+        }
+        .delete-btn {
+            background: #e53935;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .empty-list {
+            text-align: center;
+            padding: 20px;
+            color: var(--tg-theme-hint-color);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .gold-balance {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+        .balance-amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #D4AF37;
+        }
+        .balance-label {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color);
+            margin-bottom: 8px;
+        }
+        .refresh-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--tg-theme-link-color);
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .error-msg {
+            color: #e53935;
+            font-size: 14px;
+            margin-top: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="mainPage">
+        <div class="header"><div></div><div class="page-title">Control Panel</div><div style="width:32px"></div></div>
+        <div class="main-buttons">
+            <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
+            <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
+            <button class="main-btn" onclick="openCommissionPage()">💰 COMMISSIONS</button>
+            <button class="main-btn" onclick="openGoldSalePage()">🪙 GOLD SALE</button>
+        </div>
+    </div>
+
+    <div id="addPage" class="hidden">
+        <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Add Bot Record</div><div style="width:32px"></div></div>
+        <form id="addForm">
+            <div class="form-group"><label>Kingdom (K)</label><input type="text" id="kingdom" required></div>
+            <div class="form-group"><label>Alliance Name</label><input type="text" id="alliance" required></div>
+            <div class="form-group"><label>Number of Bots</label><input type="number" id="bots" min="0" required></div>
+            <div class="form-group"><label>Price</label><input type="number" id="price" min="0" step="0.01" required></div>
+            <div class="form-group"><label>Payment Method</label>
+                <select id="payment">
+                    <option value="paypal">PayPal</option><option value="russia">Russia</option>
+                    <option value="usdt">USDT</option><option value="gold">Gold</option><option value="other">Other</option>
+                </select>
+            </div>
+            <div class="button-group"><button type="button" class="btn btn-secondary" onclick="clearForm('addForm')">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+        </form>
+        <div id="addToast"></div>
+    </div>
+
+    <div id="employeesPage" class="hidden">
+        <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Employees</div><div style="width:32px"></div></div>
+        <div id="employeesList" class="employee-list"></div>
+        <form id="employeeForm">
+            <div class="form-group"><label>Add New Employee</label><input type="text" id="employeeName" required autofocus></div>
+            <div class="button-group"><button type="button" class="btn btn-secondary" onclick="clearForm('employeeForm')">Clear</button><button type="submit" class="btn btn-primary">Save</button></div>
+        </form>
+        <div id="employeeToast"></div>
+    </div>
+
+    <div id="commissionPage" class="hidden">
+        <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Commissions</div><div style="width:32px"></div></div>
+        <form id="commissionForm">
+            <div class="form-group"><label>Employee</label><select id="commissionEmployee"><option value="">Select employee...</option></select></div>
+            <div class="form-group"><label>Amount</label><input type="number" id="commissionAmount" min="0" step="0.01" required></div>
+            <div class="form-group"><label>Note</label><textarea id="commissionNote"></textarea></div>
+            <div class="button-group"><button type="button" class="btn btn-secondary" onclick="clearForm('commissionForm')">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+        </form>
+        <div id="commissionToast"></div>
+    </div>
+
+    <div id="goldSalePage" class="hidden">
+        <div class="header"><button class="back-btn" onclick="showPage('mainPage')">←</button><div class="page-title">Sell Gold</div><div style="width:32px"></div></div>
+        <div class="gold-balance">
+            <button class="refresh-btn" onclick="loadGoldBalance()" title="Refresh from Excel">🔄</button>
+            <div class="balance-label">Current Gold Balance</div>
+            <div class="balance-amount" id="goldBalance">Loading...</div>
+        </div>
+        <form id="goldSaleForm">
+            <div class="form-group"><label>Amount to Sell</label><input type="number" id="goldAmount" min="0" step="1" required><div id="amountError" class="error-msg" style="display:none"></div></div>
+            <div class="form-group"><label>Price (USD)</label><input type="number" id="goldPrice" min="0" step="0.01" required></div>
+            <div class="form-group"><label>Payment Method</label>
+                <select id="goldPayment">
+                    <option value="paypal">PayPal</option><option value="russia">Russia</option>
+                    <option value="usdt">USDT</option><option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Note</label><textarea id="goldNote"></textarea></div>
+            <div class="button-group"><button type="button" class="btn btn-secondary" onclick="clearForm('goldSaleForm')">Cancel</button><button type="submit" class="btn btn-primary">Sell</button></div>
+        </form>
+        <div id="goldToast"></div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.MainButton.hide();
+        
+        let employees = [];
+        let goldBalance = 0;
+        
+        // Load employees from localStorage
+        try {
+            employees = JSON.parse(localStorage.getItem('employees') || '[]');
+        } catch(e) {}
+        
+        function saveEmployees() { localStorage.setItem('employees', JSON.stringify(employees)); }
+        
+        function updateEmployeesList() {
+            const container = document.getElementById('employeesList');
+            if (!container) return;
+            if (employees.length === 0) { container.innerHTML = '<div class="empty-list">📭 No employees yet</div>'; return; }
+            let html = '';
+            employees.forEach((name, idx) => {
+                html += `<div class="employee-item"><span class="employee-name">👤 ${escapeHtml(name)}</span><button class="delete-btn" onclick="deleteEmployee('${escapeHtml(name)}', ${idx})">Delete</button></div>`;
+            });
+            container.innerHTML = html;
+        }
+        
+        function deleteEmployee(name, idx) {
+            if (confirm(`Delete "${name}"?`)) {
+                employees.splice(idx, 1);
+                saveEmployees();
+                updateEmployeesList();
+                updateCommissionDropdown();
+                tg.sendData(JSON.stringify({ action: 'delete_employee', name: name }));
+                showToast('employeeToast', `✅ Deleted "${escapeHtml(name)}"`);
+            }
+        }
+        
+        function updateCommissionDropdown() {
+            const select = document.getElementById('commissionEmployee');
+            if (!select) return;
+            if (employees.length === 0) { select.innerHTML = '<option value="">No employees</option>'; return; }
+            let opts = '<option value="">Select...</option>';
+            employees.forEach(n => { opts += `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`; });
+            select.innerHTML = opts;
+        }
+        
+        function loadGoldBalance() {
+            const balanceEl = document.getElementById('goldBalance');
+            balanceEl.textContent = 'Loading...';
+            tg.sendData(JSON.stringify({ action: 'get_gold_balance' }));
+        }
+        
+        function showPage(id) {
+            ['mainPage','addPage','employeesPage','commissionPage','goldSalePage'].forEach(p => document.getElementById(p).classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if (id === 'employeesPage') { updateEmployeesList(); setTimeout(() => document.getElementById('employeeName')?.focus(), 100); }
+            if (id === 'commissionPage') updateCommissionDropdown();
+            if (id === 'goldSalePage') loadGoldBalance();
+        }
+        
+        function openCommissionPage() { showPage('commissionPage'); }
+        function openGoldSalePage() { showPage('goldSalePage'); }
+        function clearForm(id) { document.getElementById(id).reset(); document.getElementById('amountError') && (document.getElementById('amountError').style.display = 'none'); }
+        function escapeHtml(t) { if(!t)return ''; return t.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
+        
+        function showToast(containerId, msg, isErr = false) {
+            const c = document.getElementById(containerId);
+            if (!c) return;
+            const toast = document.createElement('div');
+            toast.textContent = msg;
+            toast.className = 'toast' + (isErr ? ' error' : '');
+            c.innerHTML = '';
+            c.appendChild(toast);
+            setTimeout(() => { if (c.firstChild === toast) c.innerHTML = ''; }, 2000);
+        }
+        
+        // Receive data from bot
+        tg.onEvent('message', function(msg) {
+            try {
+                const data = JSON.parse(msg);
+                if (data.type === 'gold_balance') {
+                    goldBalance = data.balance;
+                    const balanceEl = document.getElementById('goldBalance');
+                    if (balanceEl) {
+                        balanceEl.textContent = goldBalance.toLocaleString();
+                    }
+                }
+            } catch(e) {}
+        });
+        
+        // Add bot record
+        document.getElementById('addForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const kingdom = document.getElementById('kingdom').value;
+            const alliance = document.getElementById('alliance').value;
+            const bots = parseInt(document.getElementById('bots').value);
+            const price = parseFloat(document.getElementById('price').value);
+            const payment = document.getElementById('payment').value;
+            if (!kingdom || !alliance || isNaN(bots) || isNaN(price)) { showToast('addToast', 'Fill all fields', true); return; }
+            tg.sendData(JSON.stringify({ action: 'add_bot_record', kingdom, alliance, bots, price, payment }));
+            clearForm('addForm');
+            tg.close();
+        });
+        
+        // Add employee
+        document.getElementById('employeeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('employeeName').value.trim();
+            if (!name) { showToast('employeeToast', 'Enter name', true); return; }
+            if (!employees.includes(name)) {
+                employees.push(name);
+                saveEmployees();
+                updateEmployeesList();
+                updateCommissionDropdown();
+                tg.sendData(JSON.stringify({ action: 'add_employee', name }));
+                showToast('employeeToast', `✅ Added "${escapeHtml(name)}"`);
+                clearForm('employeeForm');
+                document.getElementById('employeeName').focus();
+            } else { showToast('employeeToast', `❌ "${name}" exists`, true); }
+        });
+        
+        // Add commission
+        document.getElementById('commissionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const emp = document.getElementById('commissionEmployee').value;
+            const amt = parseFloat(document.getElementById('commissionAmount').value);
+            const note = document.getElementById('commissionNote').value;
+            if (!emp) { showToast('commissionToast', 'Select employee', true); return; }
+            if (!amt || amt <= 0) { showToast('commissionToast', 'Enter amount', true); return; }
+            tg.sendData(JSON.stringify({ action: 'add_commission', employee: emp, amount: amt, note }));
+            showToast('commissionToast', `✅ Commission for ${escapeHtml(emp)} added`);
+            clearForm('commissionForm');
+            document.getElementById('commissionEmployee').value = '';
+            document.getElementById('commissionAmount').focus();
+        });
+        
+        // Gold Sale
+        document.getElementById('goldSaleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = parseInt(document.getElementById('goldAmount').value);
+            const price = parseFloat(document.getElementById('goldPrice').value);
+            const payment = document.getElementById('goldPayment').value;
+            const note = document.getElementById('goldNote').value;
+            
+            if (!amount || amount <= 0) {
+                showToast('goldToast', 'Please enter a valid amount', true);
+                return;
+            }
+            if (amount > goldBalance) {
+                const err = document.getElementById('amountError');
+                err.textContent = `Insufficient balance! Available: ${goldBalance.toLocaleString()} gold`;
+                err.style.display = 'block';
+                return;
+            }
+            if (!price || price <= 0) {
+                showToast('goldToast', 'Please enter a valid price', true);
+                return;
+            }
+            
+            tg.sendData(JSON.stringify({
+                action: 'add_gold_sale',
+                amount: amount,
+                price: price,
+                payment: payment,
+                note: note
+            }));
+            
+            showToast('goldToast', `✅ Sold ${amount.toLocaleString()} gold for $${price}`);
+            clearForm('goldSaleForm');
+            
+            // Reload balance after sale
+            setTimeout(() => loadGoldBalance(), 500);
+        });
+        
+        updateEmployeesList();
+        updateCommissionDropdown();
+    </script>
+</body>
 </html>
