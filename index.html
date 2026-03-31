@@ -103,7 +103,7 @@
         .hidden {
             display: none;
         }
-        .success-toast {
+        .toast {
             background: #00a884;
             color: white;
             padding: 12px;
@@ -116,11 +116,6 @@
             0% { opacity: 1; }
             70% { opacity: 1; }
             100% { opacity: 0; display: none; }
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: var(--tg-theme-hint-color);
         }
     </style>
 </head>
@@ -135,7 +130,7 @@
         <div class="main-buttons">
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
             <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
-            <button class="main-btn" onclick="openCommissionPage()">💰 COMMISSIONS</button>
+            <button class="main-btn" onclick="showPage('commissionPage')">💰 COMMISSIONS</button>
         </div>
     </div>
 
@@ -218,7 +213,7 @@
             </div>
             <div class="form-group">
                 <label>Note (Optional)</label>
-                <textarea id="commissionNote"></textarea>
+                <textarea id="commissionNote" rows="3"></textarea>
             </div>
             <div class="button-group">
                 <button type="button" class="btn btn-secondary" onclick="clearForm('commissionForm')">Cancel</button>
@@ -234,6 +229,7 @@
         tg.MainButton.hide();
         
         let employeesList = [];
+        let waitingForEmployees = false;
 
         function showPage(pageId) {
             document.getElementById('mainPage').classList.add('hidden');
@@ -247,24 +243,22 @@
                     document.getElementById('employeeName').focus();
                 }, 100);
             }
-        }
-
-        function openCommissionPage() {
-            // أولاً نفتح الصفحة
-            showPage('commissionPage');
-            // بعدين نجيب البيانات
-            loadEmployees();
+            
+            if (pageId === 'commissionPage') {
+                loadEmployees();
+            }
         }
 
         function clearForm(formId) {
             document.getElementById(formId).reset();
         }
 
-        function showToast(elementId, message) {
+        function showToast(elementId, message, isError = false) {
             const container = document.getElementById(elementId);
             const toast = document.createElement('div');
             toast.textContent = message;
-            toast.className = 'success-toast';
+            toast.className = 'toast';
+            if (isError) toast.style.background = '#e53935';
             container.innerHTML = '';
             container.appendChild(toast);
             setTimeout(() => {
@@ -288,23 +282,30 @@
         }
 
         function loadEmployees() {
+            waitingForEmployees = true;
             const select = document.getElementById('commissionEmployee');
             select.innerHTML = '<option value="">Loading...</option>';
             tg.sendData(JSON.stringify({ action: 'get_employees' }));
         }
 
-        // استقبال البيانات من البوت
+        // استقبال البيانات من البوت - بدون إغلاق الصفحة
         tg.onEvent('message', function(msg) {
+            if (!waitingForEmployees) return;
+            
             try {
                 const data = JSON.parse(msg);
                 if (Array.isArray(data)) {
                     employeesList = data;
                     updateCommissionDropdown();
+                    waitingForEmployees = false;
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.log("Not JSON:", msg);
+                waitingForEmployees = false;
+            }
         });
 
-        // إضافة بوت
+        // إضافة بوت - يقفل الصفحة
         document.getElementById('addForm').addEventListener('submit', function(e) {
             e.preventDefault();
             tg.sendData(JSON.stringify({
@@ -319,7 +320,7 @@
             tg.close();
         });
 
-        // إضافة موظف
+        // إضافة موظف - يبقى مفتوح
         document.getElementById('employeeForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('employeeName').value.trim();
@@ -331,29 +332,32 @@
             }
         });
 
-        // إضافة عمولة
+        // إضافة عمولة - يبقى مفتوح
         document.getElementById('commissionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const employee = document.getElementById('commissionEmployee').value;
             const amount = parseFloat(document.getElementById('commissionAmount').value);
             const note = document.getElementById('commissionNote').value;
             
-            if (employee && amount) {
-                tg.sendData(JSON.stringify({
-                    action: 'add_commission',
-                    employee: employee,
-                    amount: amount,
-                    note: note || ''
-                }));
-                showToast('commissionToast', `✅ Commission for ${employee} added!`);
-                clearForm('commissionForm');
-                // نرجع نختار الموظف الأول بعد المسح عشان يبقى سهل
-                if (employeesList.length > 0) {
-                    document.getElementById('commissionEmployee').value = employeesList[0];
-                }
-            } else {
-                showToast('commissionToast', 'Please select employee and enter amount');
+            if (!employee || !amount || amount <= 0) {
+                showToast('commissionToast', 'Please select employee and enter amount', true);
+                return;
             }
+            
+            tg.sendData(JSON.stringify({
+                action: 'add_commission',
+                employee: employee,
+                amount: amount,
+                note: note || ''
+            }));
+            showToast('commissionToast', `✅ Commission for ${employee} added!`);
+            clearForm('commissionForm');
+            
+            // نرجع القائمة المنسدلة لأول موظف
+            if (employeesList.length > 0) {
+                document.getElementById('commissionEmployee').value = employeesList[0];
+            }
+            document.getElementById('commissionAmount').focus();
         });
     </script>
 </body>
