@@ -60,9 +60,6 @@
             outline: none;
             box-sizing: border-box;
         }
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--tg-theme-button-color);
-        }
         .button-group {
             display: flex;
             gap: 12px;
@@ -76,7 +73,6 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
         .btn-primary {
             background: var(--tg-theme-button-color);
@@ -86,9 +82,6 @@
             background: var(--tg-theme-secondary-bg-color);
             color: var(--tg-theme-text-color);
             border: 1px solid var(--tg-theme-hint-color);
-        }
-        .btn:active {
-            opacity: 0.7;
         }
         .main-buttons {
             display: flex;
@@ -124,16 +117,10 @@
             70% { opacity: 1; }
             100% { opacity: 0; display: none; }
         }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: var(--tg-theme-hint-color);
-        }
     </style>
 </head>
 <body>
 
-    <!-- الصفحة الرئيسية -->
     <div id="mainPage">
         <div class="header">
             <div></div>
@@ -143,11 +130,10 @@
         <div class="main-buttons">
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
             <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
-            <button class="main-btn" onclick="showPage('commissionPage'); loadEmployeesForCommission()">💰 COMMISSIONS</button>
+            <button class="main-btn" onclick="showPage('commissionPage')">💰 COMMISSIONS</button>
         </div>
     </div>
 
-    <!-- صفحة إضافة بوت -->
     <div id="addPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
@@ -157,19 +143,19 @@
         <form id="addForm">
             <div class="form-group">
                 <label>Kingdom (K)</label>
-                <input type="text" id="kingdom" placeholder="Enter kingdom name" required>
+                <input type="text" id="kingdom" required>
             </div>
             <div class="form-group">
                 <label>Alliance Name</label>
-                <input type="text" id="alliance" placeholder="Enter alliance name" required>
+                <input type="text" id="alliance" required>
             </div>
             <div class="form-group">
                 <label>Number of Bots</label>
-                <input type="number" id="bots" placeholder="Number of bots" min="0" required>
+                <input type="number" id="bots" min="0" required>
             </div>
             <div class="form-group">
                 <label>Price</label>
-                <input type="number" id="price" placeholder="Price" min="0" step="0.01" required>
+                <input type="number" id="price" min="0" step="0.01" required>
             </div>
             <div class="form-group">
                 <label>Payment Method</label>
@@ -189,7 +175,6 @@
         <div id="addToast"></div>
     </div>
 
-    <!-- صفحة الموظفين -->
     <div id="employeesPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
@@ -199,7 +184,7 @@
         <form id="employeeForm">
             <div class="form-group">
                 <label>Employee Name</label>
-                <input type="text" id="employeeName" placeholder="Enter employee name" required autofocus>
+                <input type="text" id="employeeName" required autofocus>
             </div>
             <div class="button-group">
                 <button type="button" class="btn btn-secondary" onclick="clearForm('employeeForm')">Clear</button>
@@ -209,7 +194,6 @@
         <div id="employeeToast"></div>
     </div>
 
-    <!-- صفحة العمولات - مع قائمة منسدلة -->
     <div id="commissionPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
@@ -220,16 +204,16 @@
             <div class="form-group">
                 <label>Employee</label>
                 <select id="commissionEmployee" required>
-                    <option value="">Loading employees...</option>
+                    <option value="">Select employee...</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Commission Amount</label>
-                <input type="number" id="commissionAmount" placeholder="Amount" min="0" step="0.01" required>
+                <label>Amount</label>
+                <input type="number" id="commissionAmount" min="0" step="0.01" required>
             </div>
             <div class="form-group">
                 <label>Note (Optional)</label>
-                <textarea id="commissionNote" placeholder="Notes..."></textarea>
+                <textarea id="commissionNote"></textarea>
             </div>
             <div class="button-group">
                 <button type="button" class="btn btn-secondary" onclick="clearForm('commissionForm')">Cancel</button>
@@ -258,18 +242,21 @@
                     document.getElementById('employeeName').focus();
                 }, 100);
             }
+            
+            if (pageId === 'commissionPage') {
+                loadEmployees();
+            }
         }
 
         function clearForm(formId) {
             document.getElementById(formId).reset();
         }
 
-        function showToast(elementId, message, isSuccess = true) {
+        function showToast(elementId, message) {
             const container = document.getElementById(elementId);
             const toast = document.createElement('div');
             toast.textContent = message;
-            toast.style.cssText = 'background: #00a884; color: white; padding: 12px; border-radius: 10px; text-align: center; margin-top: 16px;';
-            if (!isSuccess) toast.style.background = '#e53935';
+            toast.className = 'success-toast';
             container.innerHTML = '';
             container.appendChild(toast);
             setTimeout(() => {
@@ -292,9 +279,9 @@
             select.innerHTML = options;
         }
 
-        function loadEmployeesForCommission() {
+        function loadEmployees() {
             const select = document.getElementById('commissionEmployee');
-            select.innerHTML = '<option value="">Loading employees...</option>';
+            select.innerHTML = '<option value="">Loading...</option>';
             tg.sendData(JSON.stringify({ action: 'get_employees' }));
         }
 
@@ -306,73 +293,56 @@
                     employeesList = data;
                     updateCommissionDropdown();
                 }
-            } catch(e) {
-                console.log("Not JSON:", msg);
-            }
+            } catch(e) {}
         });
 
-        // إضافة بوت
+        // إضافة بوت - يقفل الصفحة
         document.getElementById('addForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const kingdom = document.getElementById('kingdom').value;
-            const alliance = document.getElementById('alliance').value;
-            const bots = parseInt(document.getElementById('bots').value);
-            const price = parseFloat(document.getElementById('price').value);
-            const payment = document.getElementById('payment').value;
-            
-            if (!kingdom || !alliance || isNaN(bots) || isNaN(price)) {
-                showToast('addToast', 'Please fill all fields', false);
-                return;
-            }
-            
             tg.sendData(JSON.stringify({
                 action: 'add_bot_record',
-                kingdom: kingdom,
-                alliance: alliance,
-                bots: bots,
-                price: price,
-                payment: payment
+                kingdom: document.getElementById('kingdom').value,
+                alliance: document.getElementById('alliance').value,
+                bots: parseInt(document.getElementById('bots').value),
+                price: parseFloat(document.getElementById('price').value),
+                payment: document.getElementById('payment').value
             }));
             clearForm('addForm');
             tg.close();
         });
 
-        // إضافة موظف
+        // إضافة موظف - يبقى مفتوح
         document.getElementById('employeeForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('employeeName').value.trim();
-            
-            if (!name) {
-                showToast('employeeToast', 'Please enter employee name', false);
-                return;
+            if (name) {
+                tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
+                showToast('employeeToast', `✅ Employee "${name}" added!`);
+                clearForm('employeeForm');
+                document.getElementById('employeeName').focus();
             }
-            
-            tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
-            showToast('employeeToast', `✅ Employee "${name}" saved!`, true);
-            clearForm('employeeForm');
-            document.getElementById('employeeName').focus();
         });
 
-        // إضافة عمولة - باستخدام القائمة المنسدلة
+        // إضافة عمولة - يبقى مفتوح (مش بيقفل)
         document.getElementById('commissionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const employee = document.getElementById('commissionEmployee').value;
             const amount = parseFloat(document.getElementById('commissionAmount').value);
             const note = document.getElementById('commissionNote').value;
             
-            if (!employee || isNaN(amount) || amount <= 0) {
-                showToast('commissionToast', 'Please select employee and enter valid amount', false);
-                return;
+            if (employee && amount) {
+                tg.sendData(JSON.stringify({
+                    action: 'add_commission',
+                    employee: employee,
+                    amount: amount,
+                    note: note || ''
+                }));
+                showToast('commissionToast', `✅ Commission for ${employee} added!`);
+                clearForm('commissionForm');
+                // ملاحظة: مش بنعمل tg.close() عشان الصفحة تفضل مفتوحة
+            } else {
+                showToast('commissionToast', 'Please select employee and enter amount');
             }
-            
-            tg.sendData(JSON.stringify({
-                action: 'add_commission',
-                employee: employee,
-                amount: amount,
-                note: note || ''
-            }));
-            clearForm('commissionForm');
-            tg.close();
         });
     </script>
 </body>
