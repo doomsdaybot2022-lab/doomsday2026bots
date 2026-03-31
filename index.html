@@ -307,7 +307,7 @@
         
         <div class="gold-balance">
             <div class="balance-label">Current Gold Balance</div>
-            <div class="balance-amount" id="goldBalance">0</div>
+            <div class="balance-amount" id="goldBalance">Loading...</div>
         </div>
         
         <form id="goldSaleForm">
@@ -348,26 +348,17 @@
         
         let employees = [];
         let goldBalance = 0;
+        let isWaitingForBalance = false;
         
         // Load from localStorage
         try {
             employees = JSON.parse(localStorage.getItem('employees') || '[]');
-            goldBalance = parseInt(localStorage.getItem('goldBalance') || '0');
         } catch(e) {
             employees = [];
-            goldBalance = 0;
         }
         
         function saveEmployees() {
             localStorage.setItem('employees', JSON.stringify(employees));
-        }
-        
-        function saveGoldBalance() {
-            localStorage.setItem('goldBalance', goldBalance.toString());
-            const balanceEl = document.getElementById('goldBalance');
-            if (balanceEl) {
-                balanceEl.textContent = goldBalance.toLocaleString();
-            }
         }
         
         function updateEmployeesList() {
@@ -416,11 +407,11 @@
             select.innerHTML = options;
         }
         
-        function updateGoldBalanceDisplay() {
+        function loadGoldBalance() {
+            isWaitingForBalance = true;
             const balanceEl = document.getElementById('goldBalance');
-            if (balanceEl) {
-                balanceEl.textContent = goldBalance.toLocaleString();
-            }
+            if (balanceEl) balanceEl.textContent = 'Loading...';
+            tg.sendData(JSON.stringify({ action: 'get_gold_balance' }));
         }
         
         function escapeHtml(text) {
@@ -453,7 +444,7 @@
                 updateCommissionDropdown();
             }
             if (pageId === 'goldSalePage') {
-                updateGoldBalanceDisplay();
+                loadGoldBalance();
             }
         }
         
@@ -491,6 +482,23 @@
             }, 2000);
         }
         
+        // Receive data from bot
+        tg.onEvent('message', function(msg) {
+            try {
+                const data = JSON.parse(msg);
+                if (data.type === 'gold_balance') {
+                    goldBalance = data.balance;
+                    const balanceEl = document.getElementById('goldBalance');
+                    if (balanceEl) {
+                        balanceEl.textContent = goldBalance.toLocaleString();
+                    }
+                    isWaitingForBalance = false;
+                }
+            } catch(e) {
+                // Not JSON, ignore
+            }
+        });
+        
         // Add bot record
         const addForm = document.getElementById('addForm');
         if (addForm) {
@@ -506,12 +514,6 @@
                 if (!kingdom || !alliance || isNaN(bots) || isNaN(price)) {
                     showToast('addToast', 'Please fill all fields', true);
                     return;
-                }
-                
-                // If payment is gold, update local gold balance
-                if (payment === 'gold') {
-                    goldBalance += price;
-                    saveGoldBalance();
                 }
                 
                 tg.sendData(JSON.stringify({
@@ -622,11 +624,6 @@
                     return;
                 }
                 
-                // Update local balance
-                goldBalance -= amount;
-                saveGoldBalance();
-                updateGoldBalanceDisplay();
-                
                 tg.sendData(JSON.stringify({
                     action: 'add_gold_sale',
                     amount: amount,
@@ -637,13 +634,15 @@
                 
                 showToast('goldToast', `✅ Sold ${amount.toLocaleString()} gold for $${price}!`);
                 clearForm('goldSaleForm');
+                
+                // Reload balance after sale
+                setTimeout(() => loadGoldBalance(), 500);
             });
         }
         
         // Initial load
         updateEmployeesList();
         updateCommissionDropdown();
-        updateGoldBalanceDisplay();
     </script>
 </body>
 </html>
