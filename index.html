@@ -143,6 +143,15 @@
             resize: vertical;
             min-height: 80px;
         }
+        .refresh-btn {
+            background: var(--tg-theme-secondary-bg-color);
+            border: 1px solid var(--tg-theme-hint-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 16px;
+        }
     </style>
 </head>
 <body>
@@ -231,11 +240,14 @@
             <div class="page-title">Commissions</div>
             <div style="width: 32px;"></div>
         </div>
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+            <button class="refresh-btn" onclick="loadEmployeesFromExcel()">🔄 Refresh from Excel</button>
+        </div>
         <form id="commissionForm">
             <div class="form-group">
                 <label>Employee</label>
                 <select id="commissionEmployee" required>
-                    <option value="">Select employee...</option>
+                    <option value="">Loading from Excel...</option>
                 </select>
             </div>
             <div class="form-group">
@@ -259,18 +271,8 @@
         tg.expand();
         tg.MainButton.hide();
         
-        // Load employees from localStorage
         let employees = [];
-        
-        try {
-            employees = JSON.parse(localStorage.getItem('employees') || '[]');
-        } catch(e) {
-            employees = [];
-        }
-        
-        function saveEmployees() {
-            localStorage.setItem('employees', JSON.stringify(employees));
-        }
+        let isWaitingForEmployees = false;
         
         function updateEmployeesList() {
             const container = document.getElementById('employeesList');
@@ -332,7 +334,16 @@
         
         function openCommissionPage() {
             showPage('commissionPage');
-            updateCommissionDropdown();
+            loadEmployeesFromExcel();
+        }
+        
+        function loadEmployeesFromExcel() {
+            const select = document.getElementById('commissionEmployee');
+            if (select) select.innerHTML = '<option value="">Loading from Excel...</option>';
+            
+            employees = [];
+            isWaitingForEmployees = true;
+            tg.sendData(JSON.stringify({ action: 'get_employees' }));
         }
         
         function clearForm(formId) {
@@ -358,6 +369,23 @@
                 }
             }, 2000);
         }
+        
+        // Receive data from bot (from Excel)
+        tg.onEvent('message', function(msg) {
+            if (!isWaitingForEmployees) return;
+            
+            try {
+                const data = JSON.parse(msg);
+                if (Array.isArray(data)) {
+                    employees = data;
+                    updateCommissionDropdown();
+                    updateEmployeesList();
+                    isWaitingForEmployees = false;
+                }
+            } catch(e) {
+                // Not JSON, ignore
+            }
+        });
         
         // Add bot record
         const addForm = document.getElementById('addForm');
@@ -405,7 +433,6 @@
                 
                 if (!employees.includes(name)) {
                     employees.push(name);
-                    saveEmployees();
                     updateEmployeesList();
                     updateCommissionDropdown();
                     
@@ -455,13 +482,6 @@
                 document.getElementById('commissionAmount')?.focus();
             });
         }
-        
-        // Initial load
-        updateEmployeesList();
-        updateCommissionDropdown();
-        
-        // Sync employees from bot on start (optional, can be removed)
-        // We don't send any request to bot to avoid chat messages
     </script>
 </body>
 </html>
