@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Management System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Bot Management</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -11,7 +11,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--tg-theme-bg-color);
@@ -19,7 +19,7 @@
             padding: 16px;
             min-height: 100vh;
         }
-        
+
         .header {
             display: flex;
             align-items: center;
@@ -28,7 +28,7 @@
             padding-bottom: 12px;
             border-bottom: 1px solid var(--tg-theme-hint-color);
         }
-        
+
         .back-btn {
             background: none;
             border: none;
@@ -38,16 +38,16 @@
             padding: 8px;
             margin-left: -8px;
         }
-        
+
         .page-title {
             font-size: 20px;
             font-weight: 600;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         label {
             display: block;
             font-size: 14px;
@@ -55,7 +55,7 @@
             margin-bottom: 8px;
             color: var(--tg-theme-hint-color);
         }
-        
+
         input, select, textarea {
             width: 100%;
             padding: 12px;
@@ -66,28 +66,19 @@
             font-size: 16px;
             outline: none;
             transition: border-color 0.2s;
+            box-sizing: border-box;
         }
-        
+
         input:focus, select:focus, textarea:focus {
             border-color: var(--tg-theme-button-color);
         }
-        
-        input[type="number"] {
-            -moz-appearance: textfield;
-        }
-        
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        
+
         .button-group {
             display: flex;
             gap: 12px;
             margin-top: 24px;
         }
-        
+
         .btn {
             flex: 1;
             padding: 14px;
@@ -98,29 +89,25 @@
             cursor: pointer;
             transition: opacity 0.2s;
         }
-        
+
         .btn-primary {
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
         }
-        
+
         .btn-secondary {
             background: var(--tg-theme-secondary-bg-color);
             color: var(--tg-theme-text-color);
             border: 1px solid var(--tg-theme-hint-color);
         }
-        
-        .btn:active {
-            opacity: 0.7;
-        }
-        
+
         .main-buttons {
             display: flex;
             flex-direction: column;
             gap: 12px;
             margin-top: 20px;
         }
-        
+
         .main-btn {
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
@@ -132,61 +119,65 @@
             cursor: pointer;
             text-align: center;
         }
-        
+
         .hidden {
             display: none;
         }
-        
-        textarea {
-            resize: vertical;
-            min-height: 80px;
+
+        .employee-item {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .info-text {
+            text-align: center;
+            padding: 40px;
+            color: var(--tg-theme-hint-color);
         }
     </style>
 </head>
 <body>
-    <!-- Main Menu Page -->
+
+    <!-- الصفحة الرئيسية -->
     <div id="mainPage">
         <div class="header">
             <div></div>
-            <div class="page-title">Bot Management</div>
+            <div class="page-title">Control Panel</div>
             <div style="width: 32px;"></div>
         </div>
         <div class="main-buttons">
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
-            <button class="main-btn" onclick="loadEmployees()">👥 EMPLOYEES</button>
-            <button class="main-btn" onclick="showPage('commissionPage')">💰 COMMISSIONS</button>
+            <button class="main-btn" onclick="showPage('employeesPage'); loadEmployees()">👥 EMPLOYEES</button>
+            <button class="main-btn" onclick="showPage('commissionPage'); loadCommissionEmployees()">💰 COMMISSIONS</button>
         </div>
     </div>
 
-    <!-- Add Record Page (Bots) -->
+    <!-- صفحة إضافة بوت -->
     <div id="addPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
             <div class="page-title">Add Bot Record</div>
             <div style="width: 32px;"></div>
         </div>
-        
         <form id="addForm">
             <div class="form-group">
                 <label>Kingdom (K)</label>
                 <input type="text" id="kingdom" placeholder="Enter kingdom name" required>
             </div>
-            
             <div class="form-group">
                 <label>Alliance Name</label>
                 <input type="text" id="alliance" placeholder="Enter alliance name" required>
             </div>
-            
             <div class="form-group">
                 <label>Number of Bots</label>
-                <input type="number" id="bots" placeholder="Enter number of bots" min="0" required>
+                <input type="number" id="bots" placeholder="Number of bots" min="0" required>
             </div>
-            
             <div class="form-group">
                 <label>Price</label>
-                <input type="number" id="price" placeholder="Enter price" min="0" step="0.01" required>
+                <input type="number" id="price" placeholder="Price" min="0" step="0.01" required>
             </div>
-            
             <div class="form-group">
                 <label>Payment Method</label>
                 <select id="payment">
@@ -197,7 +188,6 @@
                     <option value="other">Other</option>
                 </select>
             </div>
-            
             <div class="button-group">
                 <button type="button" class="btn btn-secondary" onclick="clearForm('addForm')">Cancel</button>
                 <button type="submit" class="btn btn-primary">Save</button>
@@ -205,20 +195,18 @@
         </form>
     </div>
 
-    <!-- Employees Page -->
+    <!-- صفحة الموظفين -->
     <div id="employeesPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
             <div class="page-title">Employees</div>
             <div style="width: 32px;"></div>
         </div>
-        
         <div id="employeesList" style="margin-bottom: 20px;"></div>
-        
         <form id="employeeForm">
             <div class="form-group">
-                <label>Employee Name</label>
-                <input type="text" id="employeeName" placeholder="Enter employee name" required>
+                <label>New Employee Name</label>
+                <input type="text" id="employeeName" placeholder="Enter name" required>
             </div>
             <div class="button-group">
                 <button type="button" class="btn btn-secondary" onclick="clearForm('employeeForm')">Clear</button>
@@ -227,32 +215,28 @@
         </form>
     </div>
 
-    <!-- Commissions Page -->
+    <!-- صفحة العمولات -->
     <div id="commissionPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
             <div class="page-title">Commissions</div>
             <div style="width: 32px;"></div>
         </div>
-        
         <form id="commissionForm">
             <div class="form-group">
                 <label>Employee</label>
                 <select id="commissionEmployee" required>
-                    <option value="">Select employee...</option>
+                    <option value="">Loading employees...</option>
                 </select>
             </div>
-            
             <div class="form-group">
-                <label>Commission Amount</label>
-                <input type="number" id="commissionAmount" placeholder="Enter commission amount" min="0" step="0.01" required>
+                <label>Amount</label>
+                <input type="number" id="commissionAmount" placeholder="Commission amount" min="0" step="0.01" required>
             </div>
-            
             <div class="form-group">
                 <label>Note (Optional)</label>
-                <textarea id="commissionNote" placeholder="Enter any notes..."></textarea>
+                <textarea id="commissionNote" placeholder="Notes..."></textarea>
             </div>
-            
             <div class="button-group">
                 <button type="button" class="btn btn-secondary" onclick="clearForm('commissionForm')">Cancel</button>
                 <button type="submit" class="btn btn-primary">Save</button>
@@ -264,62 +248,87 @@
         let tg = window.Telegram.WebApp;
         tg.expand();
         tg.MainButton.hide();
-        
+
         function showPage(pageId) {
-            document.getElementById('mainPage').classList.add('hidden');
-            document.getElementById('addPage').classList.add('hidden');
-            document.getElementById('employeesPage').classList.add('hidden');
-            document.getElementById('commissionPage').classList.add('hidden');
+            document.querySelectorAll('#mainPage, #addPage, #employeesPage, #commissionPage').forEach(p => p.classList.add('hidden'));
             document.getElementById(pageId).classList.remove('hidden');
         }
-        
+
         function clearForm(formId) {
             document.getElementById(formId).reset();
         }
-        
+
+        // تحميل الموظفين لعرضهم في القائمة
         function loadEmployees() {
-            tg.sendData(JSON.stringify({action: 'get_employees'}));
-            showPage('employeesPage');
+            tg.sendData(JSON.stringify({ action: 'get_employees' }));
         }
-        
-        // Add Bot Record
+
+        // تحميل الموظفين للقائمة المنسدلة في العمولات
+        function loadCommissionEmployees() {
+            tg.sendData(JSON.stringify({ action: 'get_employees_for_commission' }));
+        }
+
+        // استقبال البيانات من البوت
+        window.handleDataFromBot = function(data) {
+            if (data.type === 'employees_list') {
+                const container = document.getElementById('employeesList');
+                if (!data.content || data.content.length === 0) {
+                    container.innerHTML = '<div class="info-text">No employees yet</div>';
+                    return;
+                }
+                let html = '';
+                data.content.forEach(emp => {
+                    html += `<div class="employee-item">👤 ${emp.name}</div>`;
+                });
+                container.innerHTML = html;
+            } 
+            else if (data.type === 'employees_dropdown') {
+                const select = document.getElementById('commissionEmployee');
+                if (!data.content || data.content.length === 0) {
+                    select.innerHTML = '<option value="">No employees available</option>';
+                    return;
+                }
+                let options = '<option value="">Select employee...</option>';
+                data.content.forEach(emp => {
+                    options += `<option value="${emp.name}">${emp.name}</option>`;
+                });
+                select.innerHTML = options;
+            }
+        };
+
+        // إضافة بوت
         document.getElementById('addForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const data = {
+            tg.sendData(JSON.stringify({
                 action: 'add_bot_record',
                 kingdom: document.getElementById('kingdom').value,
                 alliance: document.getElementById('alliance').value,
                 bots: parseInt(document.getElementById('bots').value),
                 price: parseFloat(document.getElementById('price').value),
                 payment: document.getElementById('payment').value
-            };
-            tg.sendData(JSON.stringify(data));
+            }));
             clearForm('addForm');
-            tg.close();
+            tg.close(); // إغلاق الويب آب بعد الحفظ
         });
-        
-        // Add Employee
+
+        // إضافة موظف
         document.getElementById('employeeForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('employeeName').value.trim();
             if (name) {
-                tg.sendData(JSON.stringify({
-                    action: 'add_employee',
-                    name: name
-                }));
+                tg.sendData(JSON.stringify({ action: 'add_employee', name: name }));
                 clearForm('employeeForm');
-                document.getElementById('employeeName').value = '';
-                loadEmployees();
+                // إعادة تحميل القائمة بعد الإضافة
+                setTimeout(() => loadEmployees(), 500);
             }
         });
-        
-        // Add Commission
+
+        // إضافة عمولة
         document.getElementById('commissionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const employee = document.getElementById('commissionEmployee').value;
             const amount = parseFloat(document.getElementById('commissionAmount').value);
             const note = document.getElementById('commissionNote').value;
-            
             if (employee && amount) {
                 tg.sendData(JSON.stringify({
                     action: 'add_commission',
@@ -331,39 +340,6 @@
                 tg.close();
             }
         });
-        
-        // Receive data from bot
-        window.receiveData = function(data) {
-            if (data.type === 'employees_list') {
-                displayEmployees(data.content);
-            }
-        };
-        
-        function displayEmployees(employees) {
-            const container = document.getElementById('employeesList');
-            const select = document.getElementById('commissionEmployee');
-            
-            if (!employees || employees.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:20px; color: var(--tg-theme-hint-color);">No employees yet</div>';
-                select.innerHTML = '<option value="">No employees available</option>';
-                return;
-            }
-            
-            // Display list
-            let html = '<div style="margin-bottom: 15px;">';
-            employees.forEach(emp => {
-                html += `<div style="background: var(--tg-theme-secondary-bg-color); border-radius:8px; padding:10px; margin-bottom:8px;">👤 ${emp.name}</div>`;
-            });
-            html += '</div>';
-            container.innerHTML = html;
-            
-            // Update dropdown
-            let options = '<option value="">Select employee...</option>';
-            employees.forEach(emp => {
-                options += `<option value="${emp.name}">${emp.name}</option>`;
-            });
-            select.innerHTML = options;
-        }
     </script>
 </body>
 </html>
