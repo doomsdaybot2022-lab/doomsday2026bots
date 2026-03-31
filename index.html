@@ -162,6 +162,29 @@
             resize: vertical;
             min-height: 80px;
         }
+        .gold-balance {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .balance-amount {
+            font-size: 28px;
+            font-weight: bold;
+            color: #D4AF37;
+        }
+        .balance-label {
+            font-size: 14px;
+            color: var(--tg-theme-hint-color);
+            margin-bottom: 8px;
+        }
+        .error-msg {
+            color: #e53935;
+            font-size: 14px;
+            margin-top: 8px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -177,6 +200,7 @@
             <button class="main-btn" onclick="showPage('addPage')">➕ ADD</button>
             <button class="main-btn" onclick="showPage('employeesPage')">👥 EMPLOYEES</button>
             <button class="main-btn" onclick="openCommissionPage()">💰 COMMISSIONS</button>
+            <button class="main-btn" onclick="openGoldSalePage()">🪙 GOLD SALE</button>
         </div>
     </div>
 
@@ -222,7 +246,7 @@
         <div id="addToast"></div>
     </div>
 
-    <!-- Employees Page with Delete -->
+    <!-- Employees Page -->
     <div id="employeesPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
@@ -243,7 +267,7 @@
         <div id="employeeToast"></div>
     </div>
 
-    <!-- Commissions Page - زي ما كان شغال -->
+    <!-- Commissions Page -->
     <div id="commissionPage" class="hidden">
         <div class="header">
             <button class="back-btn" onclick="showPage('mainPage')">←</button>
@@ -273,12 +297,57 @@
         <div id="commissionToast"></div>
     </div>
 
+    <!-- Gold Sale Page -->
+    <div id="goldSalePage" class="hidden">
+        <div class="header">
+            <button class="back-btn" onclick="showPage('mainPage')">←</button>
+            <div class="page-title">Sell Gold</div>
+            <div style="width: 32px;"></div>
+        </div>
+        
+        <div class="gold-balance">
+            <div class="balance-label">Current Gold Balance</div>
+            <div class="balance-amount" id="goldBalance">Loading...</div>
+        </div>
+        
+        <form id="goldSaleForm">
+            <div class="form-group">
+                <label>Amount to Sell</label>
+                <input type="number" id="goldAmount" placeholder="Enter amount" min="0" step="1" required>
+                <div id="amountError" class="error-msg" style="display: none;"></div>
+            </div>
+            <div class="form-group">
+                <label>Price (USD)</label>
+                <input type="number" id="goldPrice" placeholder="Enter price" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select id="goldPayment">
+                    <option value="paypal">PayPal</option>
+                    <option value="russia">Russia</option>
+                    <option value="usdt">USDT</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Note (Optional)</label>
+                <textarea id="goldNote" placeholder="Enter notes..."></textarea>
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="clearForm('goldSaleForm')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Sell</button>
+            </div>
+        </form>
+        <div id="goldToast"></div>
+    </div>
+
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
         tg.MainButton.hide();
         
         let employees = [];
+        let currentGoldBalance = 0;
         
         // Load from localStorage
         try {
@@ -337,6 +406,10 @@
             select.innerHTML = options;
         }
         
+        function loadGoldBalance() {
+            tg.sendData(JSON.stringify({ action: 'get_gold_balance' }));
+        }
+        
         function escapeHtml(text) {
             if (!text) return '';
             return text.replace(/[&<>]/g, function(m) {
@@ -348,7 +421,7 @@
         }
         
         function showPage(pageId) {
-            const pages = ['mainPage', 'addPage', 'employeesPage', 'commissionPage'];
+            const pages = ['mainPage', 'addPage', 'employeesPage', 'commissionPage', 'goldSalePage'];
             pages.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
@@ -366,15 +439,24 @@
             if (pageId === 'commissionPage') {
                 updateCommissionDropdown();
             }
+            if (pageId === 'goldSalePage') {
+                loadGoldBalance();
+            }
         }
         
         function openCommissionPage() {
             showPage('commissionPage');
         }
         
+        function openGoldSalePage() {
+            showPage('goldSalePage');
+        }
+        
         function clearForm(formId) {
             const form = document.getElementById(formId);
             if (form) form.reset();
+            const errorDiv = document.getElementById('amountError');
+            if (errorDiv) errorDiv.style.display = 'none';
         }
         
         function showToast(containerId, message, isError = false) {
@@ -395,6 +477,20 @@
                 }
             }, 2000);
         }
+        
+        // Receive data from bot
+        tg.onEvent('message', function(msg) {
+            try {
+                const data = JSON.parse(msg);
+                if (data.type === 'gold_balance') {
+                    currentGoldBalance = data.balance;
+                    const balanceEl = document.getElementById('goldBalance');
+                    if (balanceEl) {
+                        balanceEl.textContent = currentGoldBalance.toLocaleString();
+                    }
+                }
+            } catch(e) {}
+        });
         
         // Add bot record
         const addForm = document.getElementById('addForm');
@@ -490,6 +586,48 @@
                 const select = document.getElementById('commissionEmployee');
                 if (select) select.value = '';
                 document.getElementById('commissionAmount')?.focus();
+            });
+        }
+        
+        // Gold Sale
+        const goldSaleForm = document.getElementById('goldSaleForm');
+        if (goldSaleForm) {
+            goldSaleForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const amount = parseInt(document.getElementById('goldAmount')?.value || '0');
+                const price = parseFloat(document.getElementById('goldPrice')?.value || '0');
+                const payment = document.getElementById('goldPayment')?.value;
+                const note = document.getElementById('goldNote')?.value || '';
+                
+                if (!amount || amount <= 0) {
+                    showToast('goldToast', 'Please enter a valid amount', true);
+                    return;
+                }
+                if (amount > currentGoldBalance) {
+                    const errorDiv = document.getElementById('amountError');
+                    if (errorDiv) {
+                        errorDiv.textContent = `Insufficient balance! Available: ${currentGoldBalance.toLocaleString()}`;
+                        errorDiv.style.display = 'block';
+                    }
+                    return;
+                }
+                if (!price || price <= 0) {
+                    showToast('goldToast', 'Please enter a valid price', true);
+                    return;
+                }
+                
+                tg.sendData(JSON.stringify({
+                    action: 'add_gold_sale',
+                    amount: amount,
+                    price: price,
+                    payment: payment,
+                    note: note
+                }));
+                
+                showToast('goldToast', `✅ Sold ${amount.toLocaleString()} gold for $${price}!`);
+                clearForm('goldSaleForm');
+                loadGoldBalance();
             });
         }
         
